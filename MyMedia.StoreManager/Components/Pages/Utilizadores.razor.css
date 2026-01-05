@@ -1,0 +1,176 @@
+﻿.user-table th {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: #64748b;
+    font-weight: 700;
+    border-bottom: 2px solid #f1f5f9;
+    padding: 15px;
+}
+
+.user-table td {
+    padding: 15px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f8fafc;
+    color: #334155;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #e2e8f0;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+/* Badges de Roles */
+.role-badge {
+    font-size: 0.7rem;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+    margin-right: 5px;
+    display: inline-block;
+    margin-bottom: 2px;
+}
+
+.role-admin {
+    background: #fae8ff;
+    color: #86198f;
+    border: 1px solid #f0abfc;
+}
+
+.role-func {
+    background: #dbeafe;
+    color: #1e40af;
+    border: 1px solid #93c5fd;
+}
+
+.role-forn {
+    background: #ffedd5;
+    color: #9a3412;
+    border: 1px solid #fdba74;
+}
+
+.role-cli {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #86efac;
+}
+
+/* Botões de Ação Pequenos */
+.btn-xs {
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    border-radius: 4px;
+    font-weight: 600;
+    margin-right: 4px;
+    margin-bottom: 4px;
+    transition: all 0.2s;
+}
+
+.btn-xs-outline {
+    background: transparent;
+    border: 1px solid #cbd5e1;
+    color: #64748b;
+}
+
+    .btn-xs-outline:hover {
+        background: #f1f5f9;
+        color: #0f172a;
+        border-color: #94a3b8;
+    }
+
+.btn-xs-active {
+    background: #e0f2fe;
+    color: #0369a1;
+    border: 1px solid #bae6fd;
+}
+.btn-role-group {
+    display: flex;
+    gap: 5px;
+}
+
+.btn-role {
+    border: 1px solid #cbd5e1;
+    background: white;
+    color: #64748b;
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+    .btn-role:hover {
+        background-color: #f1f5f9;
+        color: #0f172a;
+    }
+
+    /* Estilos Ativos (Quando o user tem essa role) */
+    .btn-role.active-admin {
+        background: #86198f;
+        color: white;
+        border-color: #86198f;
+    }
+
+    .btn-role.active-func {
+        background: #1e40af;
+        color: white;
+        border-color: #1e40af;
+    }
+
+    .btn-role.active-cli {
+        background: #166534;
+        color: white;
+        border-color: #166534;
+    }
+
+    .btn-role.active-forn {
+        background: #9a3412;
+        color: white;
+        border-color: #9a3412;
+    }
+
+
+.icon-img {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Base do botão de ação minimalista */
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border-radius: 6px; /* Cantos pouco arredondados */
+    border: 1px solid #e2e8f0;
+    background-color: white;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+    .btn-action:hover {
+        background-color: #f1f5f9;
+        border-color: #1e293b; /* Slate Navy Primary */
+        transform: translateY(-1px);
+    }
+
+/* Feedback visual sutil por estado no hover */
+.btn-disable:hover {
+    border-color: #ef4444; /* Vermelho minimalista para banir */
+}
+
+.btn-enable:hover {
+    border-color: #10b981; /* Verde minimalista para ativar */
+}

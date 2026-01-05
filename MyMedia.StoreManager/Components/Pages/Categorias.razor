@@ -1,0 +1,140 @@
+﻿@page "/categorias"
+@using Microsoft.AspNetCore.Authorization
+@using MyMedia.Shared.Entities
+@using MyMedia.StoreManager.Services
+@inject CategoriaService Service
+@inject NavigationManager NavManager
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = "Administrador,Funcionario")]
+@inject IJSRuntime JS
+
+<PageTitle>Categorias | Admin</PageTitle>
+
+
+<div class="admin-container">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="page-title mb-0">Gestão de Categorias</h2>
+            <p class="text-muted small mb-0">Organiza os produtos por secções e sub-secções.</p>
+        </div>
+        <a href="/categorias/criar" class="btn btn-create shadow-sm">
+            <i class="bi bi-plus-lg me-2"></i> Nova Categoria
+        </a>
+    </div>
+
+    @if (categorias == null)
+    {
+        <div class="text-center p-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="text-muted mt-2">A carregar dados...</p>
+        </div>
+    }
+    else if (!categorias.Any())
+    {
+        <div class="admin-card p-5 text-center text-muted">
+            <i class="bi bi-grid fs-1 d-block mb-3 opacity-25"></i>
+            <h5>Não existem categorias registadas.</h5>
+            <p class="small">Começa por criar as categorias principais da tua loja.</p>
+        </div>
+    }
+    else
+    {
+        <div class="admin-card">
+            <div class="table-responsive">
+                <table class="table table-admin table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 25%;">Nome</th>
+                            <th style="width: 35%;">Descrição</th>
+                            <th style="width: 25%;">Hierarquia</th>
+                            <th class="text-end" style="width: 15%;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var c in categorias)
+                        {
+                            <tr>
+                                <td>
+                                    <span class="fw-bold text-dark">@c.Nome</span>
+                                </td>
+                                <td class="text-muted small">
+                                    @(string.IsNullOrEmpty(c.Descricao) ? "-" : c.Descricao)
+                                </td>
+                                <td>
+                                    @if (c.CategoriaPai != null)
+                                    {
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-arrow-return-right text-muted me-2 small"></i>
+                                            <span class="badge badge-status badge-sub">
+                                                Sub de: @c.CategoriaPai.Nome
+                                            </span>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-status badge-root">
+                                            <i class="bi bi-diagram-3-fill me-1"></i> Principal
+                                        </span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <a href="/categorias/editar/@c.Id" class="btn-action btn-edit me-1" title="Editar">
+                                        <img src="Images/edicao.png" alt="Editar" class="icon-img" />
+                                    </a>
+                                    <button class="btn-action btn-delete" @onclick="() => Apagar(c)" title="Apagar">
+                                        <img src="Images/delete.png" alt="Apagar" class="icon-img" />
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="mt-3 text-end text-muted small">
+            Total de categorias: <strong>@categorias.Count</strong>
+        </div>
+    }
+</div>
+
+@code {
+    private List<Categoria>? categorias;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CarregarDados();
+    }
+
+    private async Task CarregarDados()
+    {
+        categorias = await Service.GetCategoriasAsync();
+    }
+
+    private async Task Apagar(Categoria c)
+    {
+        // Confirmação JS
+        bool confirmado = await JS.InvokeAsync<bool>("confirm", $"Tens a certeza que queres apagar '{c.Nome}'? \n\nCuidado: Produtos associados podem ficar sem categoria.");
+
+        if (confirmado)
+        {
+            try
+            {
+                bool sucesso = await Service.DeleteCategoriaAsync(c.Id);
+                if (sucesso)
+                {
+                    categorias!.Remove(c);
+                }
+                else
+                {
+                    await JS.InvokeVoidAsync("alert", "Não foi possível apagar. Verifica se existem dependências.");
+                }
+            }
+            catch (Exception ex)
+            {
+                await JS.InvokeVoidAsync("alert", $"Erro ao apagar: {ex.Message}");
+            }
+        }
+    }
+}

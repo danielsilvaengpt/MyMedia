@@ -1,0 +1,266 @@
+﻿/* Contentor Principal - Fundo Escuro Profundo */
+.login-container {
+    min-height: 100vh;
+    background-color: #0f172a; /* Slate 900 (Muito escuro) */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+/* Cartão Duplo - ZERO Bordas Arredondadas */
+.auth-card {
+    background: white;
+    border-radius: 0; /* Quadrado */
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); /* Sombra dramática */
+    max-width: 1000px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #1e293b;
+}
+
+@media (min-width: 768px) {
+    .auth-card {
+        flex-direction: row;
+        min-height: 500px;
+    }
+}
+
+/* Coluna Esquerda (Formulário) */
+.form-section {
+    padding: 3rem;
+    flex: 1;
+    background-color: #fff;
+    color: #0f172a;
+}
+
+/* Coluna Direita (Visual) - Gradiente Escuro */
+.visual-section {
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); /* Slate Gradient */
+    color: #f8fafc;
+    padding: 3rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    border-left: 1px solid #334155;
+}
+
+/* Inputs - Quadrados e Sérios */
+.form-floating > .form-control {
+    border-radius: 0; /* Quadrado */
+    border: 1px solid #cbd5e1;
+    background-color: #f8fafc;
+    color: #0f172a;
+}
+
+    .form-floating > .form-control:focus {
+        border-color: #0f172a; /* Borda preta/azul escura ao focar */
+        background-color: #fff;
+        box-shadow: none; /* Sem brilho, apenas borda sólida */
+        border-width: 2px;
+    }
+
+.form-floating > label {
+    color: #64748b;
+}
+
+/* Botão Principal - Escuro */
+.btn-login {
+    background-color: #0f172a; /* Slate 900 */
+    border: 1px solid #0f172a;
+    padding: 14px;
+    border-radius: 0; /* Quadrado */
+    font-weight: 700;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+    color: white;
+    width: 100%;
+}
+
+    .btn-login:hover {
+        background-color: #334155; /* Slate 700 */
+        border-color: #334155;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+/* Títulos */
+.brand-title {
+    font-weight: 800;
+    color: #fff; /* Branco puro */
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    letter-spacing: -1px;
+}
+
+.login-title {
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
+}
+
+/* Links */
+.auth-link {
+    color: #475569;
+    text-decoration: none;
+    font-weight: 600;
+    border-bottom: 1px solid transparent;
+    transition: all 0.2s;
+}
+
+    .auth-link:hover {
+        color: #0f172a;
+        border-bottom-color: #0f172a;
+    }
+
+/* Checkbox quadrada */
+.form-check-input {
+    border-radius: 0;
+    border-color: #cbd5e1;
+}
+
+    .form-check-input:checked {
+        background-color: #0f172a;
+        border-color: #0f172a;
+    }
+/* Contentor Principal - Fundo Escuro Profundo */
+.login-container {
+    min-height: 100vh;
+    background-color: #0f172a; /* Slate 900 (Muito escuro) */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+/* Cartão Duplo - ZERO Bordas Arredondadas */
+.auth-card {
+    background: white;
+    border-radius: 0; /* Quadrado */
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); /* Sombra dramática */
+    max-width: 1000px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #1e293b;
+}
+
+@media (min-width: 768px) {
+    .auth-card {
+        flex-direction: row;
+        min-height: 500px;
+    }
+}
+
+/* Coluna Esquerda (Formulário) */
+.form-section {
+    padding: 3rem;
+    flex: 1;
+    background-color: #fff;
+    color: #0f172a;
+}
+
+/* Coluna Direita (Visual) - Gradiente Escuro */
+.visual-section {
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); /* Slate Gradient */
+    color: #f8fafc;
+    padding: 3rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    border-left: 1px solid #334155;
+}
+
+/* Inputs - Quadrados e Sérios */
+.form-floating > .form-control {
+    border-radius: 0; /* Quadrado */
+    border: 1px solid #cbd5e1;
+    background-color: #f8fafc;
+    color: #0f172a;
+}
+
+    .form-floating > .form-control:focus {
+        border-color: #0f172a; /* Borda preta/azul escura ao focar */
+        background-color: #fff;
+        box-shadow: none; /* Sem brilho, apenas borda sólida */
+        border-width: 2px;
+    }
+
+.form-floating > label {
+    color: #64748b;
+}
+
+/* Botão Principal - Escuro */
+.btn-login {
+    background-color: #0f172a; /* Slate 900 */
+    border: 1px solid #0f172a;
+    padding: 14px;
+    border-radius: 0; /* Quadrado */
+    font-weight: 700;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+    color: white;
+    width: 100%;
+}
+
+    .btn-login:hover {
+        background-color: #334155; /* Slate 700 */
+        border-color: #334155;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+/* Títulos */
+.brand-title {
+    font-weight: 800;
+    color: #fff; /* Branco puro */
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    letter-spacing: -1px;
+}
+
+.login-title {
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
+}
+
+/* Links */
+.auth-link {
+    color: #475569;
+    text-decoration: none;
+    font-weight: 600;
+    border-bottom: 1px solid transparent;
+    transition: all 0.2s;
+}
+
+    .auth-link:hover {
+        color: #0f172a;
+        border-bottom-color: #0f172a;
+    }
+
+/* Checkbox quadrada */
+.form-check-input {
+    border-radius: 0;
+    border-color: #cbd5e1;
+}
+
+    .form-check-input:checked {
+        background-color: #0f172a;
+        border-color: #0f172a;
+    }

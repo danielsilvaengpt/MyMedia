@@ -1,0 +1,136 @@
+﻿@page "/modos"
+@using Microsoft.AspNetCore.Authorization
+@using MyMedia.Shared.Entities
+@using MyMedia.StoreManager.Services
+@inject ModoDisponibilizacaoService ModoService
+@inject NavigationManager NavManager
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = "Administrador,Funcionario")]
+@inject IJSRuntime JS
+
+<PageTitle>Modos de Disponibilização | Admin</PageTitle>
+
+
+
+<div class="admin-container">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="page-title mb-0">Modos de Disponibilização</h2>
+            <p class="text-muted small mb-0">Define formatos de entrega (Físico, Digital, Download).</p>
+        </div>
+        <a href="modos/criar" class="btn btn-create shadow-sm">
+            <i class="bi bi-plus-lg me-2"></i> Novo Modo
+        </a>
+    </div>
+
+    @if (modos == null)
+    {
+        <div class="text-center p-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="text-muted mt-2">A carregar dados...</p>
+        </div>
+    }
+    else if (!modos.Any())
+    {
+        <div class="admin-card p-5 text-center text-muted">
+            <i class="bi bi-box-seam fs-1 d-block mb-3 opacity-25"></i>
+            <h5>Nenhum modo configurado.</h5>
+            <p class="small">Cria o primeiro modo para permitir associar produtos.</p>
+        </div>
+    }
+    else
+    {
+        <div class="admin-card">
+            <div class="table-responsive">
+                <table class="table table-admin table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 25%;">Nome</th>
+                            <th style="width: 45%;">Descrição</th>
+                            <th class="text-center" style="width: 15%;">Estado</th>
+                            <th class="text-end" style="width: 15%;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var modo in modos)
+                        {
+                            <tr>
+                                <td>
+                                    <span class="fw-bold text-dark">@modo.Nome</span>
+                                </td>
+                                <td class="text-muted small">
+                                    @(string.IsNullOrEmpty(modo.Descricao) ? "-" : modo.Descricao)
+                                </td>
+                                <td class="text-center">
+                                    @if (modo.Ativo)
+                                    {
+                                        <span class="badge badge-status badge-active">Ativo</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-status badge-inactive">Inativo</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <a href="modos/editar/@modo.Id" class="btn-action btn-edit me-1" title="Editar">
+                                        <img src="Images/edicao.png" alt="Editar" class="icon-img" />
+                                    </a>
+                                    <button class="btn-action btn-delete" @onclick="() => Apagar(modo)" title="Apagar">
+                                        <img src="Images/delete.png" alt="Apagar" class="icon-img" />
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="mt-3 text-end text-muted small">
+            Total de registos: <strong>@modos.Count</strong>
+        </div>
+    }
+</div>
+
+@code {
+    private List<ModoDisponibilizacao>? modos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await CarregarDados();
+        }
+        catch (Exception ex)
+        {
+            // Isto apanha o erro se a API estiver desligada,
+            // evitando que a página "estoire" completamente.
+            Console.WriteLine($"Erro ao carregar modos: {ex.Message}");
+            modos = new List<ModoDisponibilizacao>();
+        }
+    }
+
+    private async Task CarregarDados()
+    {
+        modos = await ModoService.GetAll();
+    }
+
+    private async Task Apagar(ModoDisponibilizacao modo)
+    {
+        bool confirmado = await JS.InvokeAsync<bool>("confirm", $"Tens a certeza que queres apagar '{modo.Nome}'?");
+
+        if (confirmado)
+        {
+            try
+            {
+                await ModoService.Delete(modo.Id);
+                await CarregarDados();
+            }
+            catch (Exception)
+            {
+                await JS.InvokeVoidAsync("alert", "Erro: Não foi possível apagar. Verifica se este modo está a ser usado por algum produto.");
+            }
+        }
+    }
+}

@@ -1,0 +1,152 @@
+﻿/* ============================================================
+   REGISTER PAGE CSS (Adaptado do Login Slate/Dark)
+   ============================================================ */
+
+/* 1. Contentor Principal */
+.register-container {
+    min-height: 100vh;
+    background-color: #0f172a; /* Slate 900 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+/* 2. Cartão de Autenticação */
+.auth-card {
+    background: white;
+    border-radius: 0; /* ZERO Bordas arredondadas */
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); /* Sombra dramática */
+    max-width: 1000px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #1e293b;
+    overflow: hidden; /* Garante que nada sai do quadrado */
+}
+
+/* Layout Desktop */
+@media (min-width: 768px) {
+    .auth-card {
+        flex-direction: row; /* Coloca lado a lado */
+        min-height: 600px; /* Um pouco mais alto que o login devido aos campos extra */
+    }
+}
+
+/* 3. Coluna Visual (Agora à ESQUERDA baseado no seu HTML) */
+.visual-section {
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); /* Slate Gradient */
+    color: #f8fafc;
+    padding: 3rem;
+    flex: 1;
+    display: flex; /* Nota: O seu HTML tem d-none d-md-flex, isto controla a visibilidade */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    /* MUDANÇA: Border-right porque esta coluna está à esquerda */
+    border-right: 1px solid #334155;
+    border-left: none;
+}
+
+/* 4. Coluna do Formulário (Agora à DIREITA) */
+.form-section {
+    padding: 3rem;
+    flex: 1.2; /* Damos um pouco mais de espaço ao form de registo */
+    background-color: #fff;
+    color: #0f172a;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* 5. Inputs - Estilo Quadrado e Sério */
+.form-floating > .form-control {
+    border-radius: 0;
+    border: 1px solid #cbd5e1;
+    background-color: #f8fafc;
+    color: #0f172a;
+    height: 3.5rem;
+}
+
+    .form-floating > .form-control:focus {
+        border-color: #0f172a;
+        background-color: #fff;
+        box-shadow: none;
+        border-width: 2px;
+        padding-left: 11px; /* Compensa a borda extra para o texto não pular */
+    }
+
+.form-floating > label {
+    color: #64748b;
+}
+
+/* 6. Botão de Registar (Igual ao btn-login) */
+.btn-register {
+    background-color: #0f172a; /* Slate 900 */
+    border: 1px solid #0f172a;
+    padding: 14px;
+    border-radius: 0; /* Quadrado */
+    font-weight: 700;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+    color: white;
+    width: 100%;
+    margin-top: 1rem;
+}
+
+    .btn-register:hover {
+        background-color: #334155; /* Slate 700 */
+        border-color: #334155;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+/* 7. Tipografia */
+.brand-title {
+    font-weight: 800;
+    color: #fff;
+    font-size: 2.2rem;
+    margin-bottom: 1rem;
+    letter-spacing: -1px;
+}
+
+.form-title {
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
+    font-size: 1.75rem;
+}
+
+/* 8. Links (Entrar / Voltar) */
+.auth-link {
+    color: #475569;
+    text-decoration: none;
+    font-weight: 600;
+    border-bottom: 1px solid transparent;
+    transition: all 0.2s;
+}
+
+    .auth-link:hover {
+        color: #0f172a;
+        border-bottom-color: #0f172a;
+    }
+
+/* Ajuste específico para o botão "Entrar" dentro da área escura (visual-section) */
+.visual-section .btn-outline-light {
+    border-radius: 0 !important; /* Forçar quadrado mesmo que bootstrap tente arredondar */
+    border-width: 1px;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    padding: 10px 24px;
+}
+
+    .visual-section .btn-outline-light:hover {
+        background-color: #fff;
+        color: #0f172a;
+    }

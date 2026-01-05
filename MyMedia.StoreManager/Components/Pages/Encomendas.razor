@@ -1,0 +1,183 @@
+﻿@page "/encomendas"
+@using Microsoft.AspNetCore.Authorization
+@using MyMedia.Shared.Entities
+@using MyMedia.StoreManager.Services
+@inject EncomendaService Service
+@inject NavigationManager NavManager
+@rendermode InteractiveServer
+
+@attribute [Authorize(Roles = "Administrador,Funcionario")]
+
+<PageTitle>Vendas | Admin</PageTitle>
+
+<div class="admin-container">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="page-title mb-0">Gestão de Vendas</h2>
+            <p class="text-muted small mb-0">Acompanha e gere as encomendas dos clientes.</p>
+        </div>
+    </div>
+
+    <div class="admin-card p-4 mb-4">
+        <div class="row align-items-end">
+            <div class="col-md-4">
+                <label class="filter-label">Estado da Encomenda</label>
+                <select class="form-select" @bind="filtroEstado">
+                    <option value="">Todas as Encomendas</option>
+                    <option value="Pendente">Pendente</option>
+                    <option value="Confirmada">Confirmada</option>
+                    <option value="Pago">Pago</option>
+                    <option value="Expedido">Expedido</option>
+                    <option value="Anulada">Anulada</option>
+                </select>
+            </div>
+
+            <div class="col-md-8 text-end">
+                <div class="d-inline-flex gap-3">
+                    <div class="px-3 py-2 bg-light rounded border text-start">
+                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.65rem;">Total Vendas</small>
+                        <span class="fw-bold fs-5">@EncomendasFiltradas.Count()</span>
+                    </div>
+                    <div class="px-3 py-2 bg-light rounded border text-start">
+                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.65rem;">Valor Total</small>
+                        <span class="fw-bold fs-5 text-success">
+                            @EncomendasFiltradas.Sum(e => e.ValorTotal).ToString("C")
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-card">
+        @if (encomendas == null)
+        {
+            <div class="text-center p-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="text-muted mt-2">A carregar vendas...</p>
+            </div>
+        }
+        else if (!EncomendasFiltradas.Any())
+        {
+            <div class="p-5 text-center text-muted">
+                <i class="bi bi-cart-x fs-1 d-block mb-3 opacity-25"></i>
+                <h5>Nenhuma encomenda encontrada.</h5>
+                <p class="small">Tenta alterar o filtro de estado.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-admin table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 10%;">ID</th>
+                            <th style="width: 20%;">Data</th>
+                            <th style="width: 30%;">Cliente</th>
+                            <th style="width: 15%;" class="text-end">Total</th>
+                            <th style="width: 15%;" class="text-center">Estado</th>
+                            <th style="width: 10%;" class="text-end">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var enc in EncomendasFiltradas)
+                        {
+                            <tr>
+                                <td>
+                                    <span class="font-monospace fw-bold text-dark">#@enc.Id</span>
+                                </td>
+                                <td class="text-muted">
+                                    @enc.DataEncomenda.ToString("dd/MM/yyyy")
+                                    <small class="d-block opacity-75">@enc.DataEncomenda.ToString("HH:mm")</small>
+                                </td>
+                                <td>
+                                    @if (enc.Cliente != null)
+                                    {
+                                        <div class="d-flex align-items-center">
+                                            <div class="rounded-circle bg-light border d-flex align-items-center justify-content-center me-2"
+                                                 style="width: 32px; height: 32px; font-size: 0.8rem; color: #64748b;">
+                                                <i class="bi bi-person-fill"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold text-dark">@enc.Cliente.NomeCompleto</div>
+                                                <div class="small text-muted">@enc.Cliente.Email</div>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-danger small fst-italic">Utilizador Removido</span>
+                                    }
+                                </td>
+                                <td class="text-end fw-bold text-dark">
+                                    @enc.ValorTotal.ToString("C")
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge badge-status @GetBadgeClass(enc.Estado)">
+                                        @enc.Estado
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <a href="/encomendas/detalhes/@enc.Id" class="btn-action btn-view-text" title="Gerir Encomenda">
+                                        <img src="Images/gerir.png" alt="Ver" class="icon-img me-2" />
+                                        <span>Gerir</span>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<Encomenda>? encomendas;
+    private string filtroEstado = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            encomendas = await Service.GetEncomendasAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro ao carregar encomendas: {ex.Message}");
+            encomendas = new List<Encomenda>();
+        }
+    }
+
+    private IEnumerable<Encomenda> EncomendasFiltradas
+    {
+        get
+        {
+            if (encomendas == null) return Enumerable.Empty<Encomenda>();
+
+            if (string.IsNullOrEmpty(filtroEstado))
+            {
+                // Ordena por data decrescente (mais recentes primeiro)
+                return encomendas.OrderByDescending(e => e.DataEncomenda);
+            }
+
+            return encomendas
+                .Where(e => e.Estado == filtroEstado)
+                .OrderByDescending(e => e.DataEncomenda);
+        }
+    }
+
+    private string GetBadgeClass(string estado)
+    {
+        return estado switch
+        {
+            "Pendente" => "badge-pendente",
+            "Pago" => "badge-pago",
+            "Expedido" => "badge-expedido",
+            "Anulada" => "badge-anulada",
+            "Confirmada" => "badge-confirmada",
+            _ => "bg-secondary text-white"
+        };
+    }
+}s

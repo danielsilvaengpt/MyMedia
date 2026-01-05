@@ -1,0 +1,197 @@
+﻿@page
+
+"/categorias/criar"
+@page "/categorias/editar/{id:int}"
+@using Microsoft.AspNetCore.Authorization
+@using MyMedia.Shared.Entities
+@using MyMedia.StoreManager.Services
+@inject CategoriaService Service
+@inject NavigationManager NavManager
+@rendermode InteractiveServer
+
+@attribute [Authorize(Roles = "Administrador,Funcionario")]
+
+<PageTitle > @(Id == null ? "Nova Categoria" : "Editar Categoria") | Admin</PageTitle >
+
+<style >
+/* Estilo Admin Geral */
+.admin-container {
+    background-color: #f1f5f9;
+    min-height: 100vh;
+    padding: 2rem;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.page-title {
+    color: #1e293b;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+/* Cartão de Formulário */
+.admin-card {
+    background: white;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+}
+
+/* Labels e Inputs */
+.form-label {
+    font-weight: 600;
+    color: #334155;
+    font-size: 0.9rem;
+}
+
+.form-control, .form-select {
+    border-color: #e2e8f0;
+    border-radius: 8px;
+    padding: 0.75rem;
+    font-size: 0.95rem;
+}
+
+    .form-control:focus, .form-select:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+/* Botões */
+.btn-save {
+    background-color: #0f172a;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+    .btn-save:hover {
+        background-color: #334155;
+        color: white;
+    }
+
+.btn-cancel {
+    background-color: white;
+    color: #64748b;
+    border: 1px solid #cbd5e1;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+    .btn-cancel:hover {
+        background-color: #f1f5f9;
+        color: #0f172a;
+        border-color: #94a3b8;
+    }
+
+</style >
+
+<div class="admin-container" >
+
+<div class="row justify-content-center" >
+<div class="col-md-8 col-lg-6" >
+
+<div class="d-flex justify-content-between align-items-center mb-4" >
+<h2 class="page-title mb-0" > @(Id == null ? "Nova Categoria" : "Editar Categoria")</h2 >
+<a href="/categorias" class="btn btn-sm btn-outline-secondary border-0" >
+<i class="bi bi-x-lg" > </i >
+</a >
+</div >
+
+<div class="admin-card" >
+<EditForm Model="categoria" OnValidSubmit="Gravar" >
+<DataAnnotationsValidator / >
+
+@if (!string.IsNullOrEmpty(errorMessage)) {
+    <div class="alert alert-danger mb-4">@errorMessage</div>
+}
+
+@* --- NOME --- *@ <div class="mb-4"> <label class="form-label">Nome da Categoria <span class="text-danger">*</span></label> <InputText class="form-control" @bind-Value="categoria.Nome" placeholder="Ex: Rock, Filmes, Tecnologia..." /> <ValidationMessage For="@(() => categoria.Nome)" class="text-danger small mt-1" /> </div> @* --- DESCRIÇÃO --- *@ <div class="mb-4"> <label class="form-label">Descrição</label> <InputTextArea class="form-control" @bind-Value="categoria.Descricao" rows="3" placeholder="Breve descrição para ajudar na gestão..." /> <ValidationMessage For="@(() => categoria.Descricao)" class="text-danger small mt-1" /> </div> @* --- HIERARQUIA (Categoria Pai) --- *@ <div class="mb-4"> <label class="form-label">Categoria Mãe (Opcional)</label> <InputSelect class="form-select" @bind-Value="categoria.CategoriaPaiId"> <option value="">-- Nenhuma (É Categoria Principal) --</option> @foreach (var c in listaCategorias) {
+    // Evitar ciclos (categoria ser mãe de si própria)
+    if (c.Id != categoria.Id) {
+        <option value="@c.Id">@c.Nome</option>
+    }
+}
+
+</InputSelect >
+<div class="form-text mt-2 text-muted small" >
+<i class="bi bi-info-circle me-1" > </i >
+Selecione apenas se esta for uma subcategoria (ex: Selecione "Música" se estiver a criar "Rock").
+</div >
+</div >
+
+<hr class="my-4 opacity-10" >
+
+@* --- BOTÕES --- *@
+<div class="d-flex justify-content-end gap-3" >
+<a href="/categorias" class="btn btn-cancel" > Cancelar</a >
+<button type="submit" class="btn btn-save" >
+<i class="bi bi-check-lg me-2" > </i > Gravar Alterações
+</button >
+</div >
+
+</EditForm >
+</div >
+
+</div >
+</div >
+</div >
+
+@code {
+    [Parameter] public int? Id
+
+{
+    get;
+    set;
+}
+
+private Categoria categoria = new Categoria();
+private List<Categoria > listaCategorias = new();
+private string errorMessage = "";
+
+protected override async Task OnInitializedAsync() {
+    try
+
+{
+    // 1. Carregar lista para dropdown listaCategorias = await Service.GetCategoriasAsync();
+    // 2. Se for edição, carregar dados if (Id != null)
+
+{
+    var catExistente = await Service.GetCategoriaByIdAsync(Id.Value);
+    if (catExistente != null)
+
+{
+    categoria = catExistente;
+}
+
+else {
+    errorMessage = "Categoria não encontrada.";
+}
+
+}
+}
+
+catch (Exception ex) {
+    errorMessage = "Erro ao carregar dados: " + ex.Message;
+}
+
+}
+
+private async Task Gravar() {
+    try
+
+{
+    await Service.SaveCategoriaAsync(categoria);
+    NavManager .NavigateTo("/categorias");
+}
+
+catch (Exception ex) {
+    errorMessage = "Erro ao gravar: " + ex.Message;
+}
+
+}
+}

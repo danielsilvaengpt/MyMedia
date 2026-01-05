@@ -1,0 +1,134 @@
+﻿@page "/modos/criar"
+@page "/modos/editar/{id:int}"
+@using MyMedia.Shared.Entities
+@using MyMedia.StoreManager.Services
+@using Microsoft.AspNetCore.Authorization
+@inject ModoDisponibilizacaoService ModoService
+@inject NavigationManager Navigation
+@attribute [Authorize(Roles = "Administrador,Funcionario")]
+
+<PageTitle>@(Id == null ? "Novo Modo" : "Editar Modo") | Admin</PageTitle>
+
+<div class="admin-container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="page-title mb-0">
+                    @(Id == null ? "Novo Modo" : "Editar Modo")
+                </h2>
+                <a href="/modos" class="btn btn-sm btn-outline-secondary border-0 rounded-circle p-2" title="Fechar">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+            </div>
+
+            <div class="admin-card">
+                <EditForm Model="modo" OnValidSubmit="GravarDados">
+                    <DataAnnotationsValidator />
+
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger mb-4">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i> @errorMessage
+                        </div>
+                    }
+
+                    @* NOME *@
+                    <div class="mb-4">
+                        <label class="form-label">Nome <span class="text-danger">*</span></label>
+                        <InputText @bind-Value="modo.Nome" class="form-control" placeholder="Ex: Download Digital, Entrega Física..." />
+                        <ValidationMessage For="@(() => modo.Nome)" class="text-danger small mt-1" />
+                    </div>
+
+                    @* DESCRIÇÃO *@
+                    <div class="mb-4">
+                        <label class="form-label">Descrição</label>
+                        <InputTextArea @bind-Value="modo.Descricao" class="form-control" rows="3" placeholder="Explique como funciona este modo de entrega..." />
+                        <ValidationMessage For="@(() => modo.Descricao)" class="text-danger small mt-1" />
+                    </div>
+
+                    @* CHECKBOX ATIVO *@
+                    <div class="mb-4 bg-light p-3 rounded border">
+                        <div class="form-check form-switch">
+                            <InputCheckbox @bind-Value="modo.Ativo" class="form-check-input" id="checkAtivo" style="cursor: pointer;" />
+                            <label class="form-check-label fw-bold ms-2" for="checkAtivo" style="cursor: pointer;">
+                                Modo Ativo
+                            </label>
+                        </div>
+                        <div class="text-muted small mt-1 ms-1">
+                            Se desativado, não aparecerá como opção ao criar novos produtos.
+                        </div>
+                    </div>
+
+                    <hr class="my-4 opacity-10">
+
+                    @* BOTÕES *@
+                    <div class="d-flex justify-content-end gap-3">
+                        <a href="/modos" class="btn btn-cancel">Cancelar</a>
+                        <button type="submit" class="btn btn-save">
+                            <i class="bi bi-check-lg me-2"></i> Gravar Alterações
+                        </button>
+                    </div>
+
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+
+    private ModoDisponibilizacao modo = new ModoDisponibilizacao();
+    private string errorMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if (Id != null)
+            {
+                var resultado = await ModoService.Get(Id.Value);
+                if (resultado != null)
+                {
+                    modo = resultado;
+                }
+                else
+                {
+                    errorMessage = "Modo não encontrado.";
+                }
+            }
+            else
+            {
+                // Garante que ao criar novo, vem ativo por defeito (UX melhor)
+                modo.Ativo = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Erro ao carregar dados: " + ex.Message;
+        }
+    }
+
+    private async Task GravarDados()
+    {
+        try
+        {
+            if (modo.Id == 0)
+            {
+                await ModoService.Add(modo);
+            }
+            else
+            {
+                await ModoService.Update(modo);
+            }
+
+            Navigation.NavigateTo("/modos");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Erro ao gravar: " + ex.Message;
+        }
+    }
+}

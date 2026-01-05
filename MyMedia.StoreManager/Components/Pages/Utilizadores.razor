@@ -1,0 +1,239 @@
+﻿@page "/utilizadores"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using MyMedia.Shared.Entities
+@using MyMedia.StoreManager.Services
+@inject UtilizadorService Service
+@inject AuthenticationStateProvider AuthStateProvider
+@rendermode InteractiveServer
+
+@attribute [Authorize(Roles = "Administrador,Funcionario")]
+
+<PageTitle>Utilizadores | Admin</PageTitle>
+
+<div class="container-fluid p-4" style="background-color: #f8fafc; min-height: 100vh;">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-0">Utilizadores</h2>
+            <p class="text-muted small mb-0">Gerir acessos (Role Única).</p>
+        </div>
+        <div class="bg-white px-3 py-2 rounded shadow-sm border">
+            <i class="bi bi-people-fill text-primary me-2"></i>
+            <strong>@listaUtilizadores?.Count</strong> registos
+        </div>
+    </div>
+
+    @if (listaUtilizadores == null)
+    {
+        <div class="text-center p-5">
+            <div class="spinner-border text-primary" role="status"></div>
+        </div>
+    }
+    else
+    {
+        <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table user-table mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Utilizador</th>
+                            <th>Role Atual</th>
+                            <th>Estado</th>
+                            <th>Definir Tipo (Apenas 1)</th>
+                            <th class="text-end">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in listaUtilizadores)
+                        {
+                            bool isMe = user.UserName == currentUserEmail;
+
+                            // Verificar roles atuais para pintar os botões
+                            var rolesDoUser = userRoles.ContainsKey(user.Id) ? userRoles[user.Id] : new List<string>();
+
+                            bool isAdmin = rolesDoUser.Contains("Administrador");
+                            bool isFunc = rolesDoUser.Contains("Funcionario");
+                            bool isCli = rolesDoUser.Contains("Cliente");
+                            bool isForn = rolesDoUser.Contains("Fornecedor");
+
+                            // Lógica para esconder botões se o utilizador alvo for Admin e eu não for Admin
+                            // Se eu sou Funcionario, não posso mexer em Admins
+                            bool canEditThisUser = IamAdmin || (!isAdmin);
+
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="user-avatar me-3">
+                                            @GetIniciais(user.NomeCompleto)
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold text-dark">@user.NomeCompleto</div>
+                                            <div class="small text-muted">@user.Email</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (rolesDoUser.Any())
+                                    {
+                                        <span class="role-badge @GetRoleClass(rolesDoUser.First())">
+                                            @rolesDoUser.First()
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">Sem Acesso</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (user.ContaAtiva)
+                                    {
+                                        <span class="badge bg-success bg-opacity-10 text-success border border-success rounded-pill px-3">Ativo</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger rounded-pill px-3">Suspenso</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @if (!isMe && canEditThisUser)
+                                    {
+                                        <div class="btn-role-group">
+                                            @if (IamAdmin)
+                                            {
+                                                <button class="btn-role @(isAdmin ? "active-admin" : "")"
+                                                        @onclick='() => MudarRoleUnica(user, "Administrador")'>
+                                                    Admin
+                                                </button>
+                                                <button class="btn-role @(isFunc ? "active-func" : "")"
+                                                        @onclick='() => MudarRoleUnica(user, "Funcionario")'>
+                                                    Staff
+                                                </button>
+                                            }
+
+                                            <button class="btn-role @(isCli ? "active-cli" : "")"
+                                                    @onclick='() => MudarRoleUnica(user, "Cliente")'>
+                                                Cliente
+                                            </button>
+
+                                            <button class="btn-role @(isForn ? "active-forn" : "")"
+                                                    @onclick='() => MudarRoleUnica(user, "Fornecedor")'>
+                                                Forn.
+                                            </button>
+                                        </div>
+                                    }
+                                    else if (!canEditThisUser)
+                                    {
+                                        <span class="text-muted small fst-italic">Protegido</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small fst-italic">Tu</span>
+                                    }
+                                </td>
+
+                                <td class="text-end">
+                                    @if (!isMe && IamAdmin)
+                                    {
+                                        <button class="btn btn-sm @(user.ContaAtiva ? "btn-outline-danger" : "btn-success") rounded-pill px-3"
+                                                @onclick="() => ToggleEstado(user)">
+                                            <i class="bi @(user.ContaAtiva ? "bi-ban" : "bi-check-lg")">
+                                                <img src="Images/ativar.png"
+                                                     alt="Estado"
+                                                     class="icon-img" />
+                                            </i>
+                                        </button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<ApplicationUser>? listaUtilizadores;
+    private Dictionary<string, IList<string>> userRoles = new();
+    private string? currentUserEmail;
+    private bool IamAdmin = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        currentUserEmail = user.Identity?.Name;
+        IamAdmin = user.IsInRole("Administrador");
+
+        await CarregarDados();
+    }
+
+    private async Task CarregarDados()
+    {
+        listaUtilizadores = await Service.GetUsersAsync();
+        foreach (var u in listaUtilizadores)
+        {
+            if (!userRoles.ContainsKey(u.Id))
+            {
+                userRoles[u.Id] = await Service.GetUserRolesAsync(u);
+            }
+        }
+    }
+
+    private async Task ToggleEstado(ApplicationUser user)
+    {
+        await Service.ToggleEstadoAsync(user.Id);
+        user.ContaAtiva = !user.ContaAtiva;
+    }
+
+    // --- NOVA LÓGICA DE ROLE ÚNICA ---
+    private async Task MudarRoleUnica(ApplicationUser user, string roleAlvo)
+    {
+        var rolesAtuais = userRoles[user.Id];
+
+        // 1. Se o user JÁ tem a role em que clicámos, removemos (fica sem nenhuma)
+        if (rolesAtuais.Contains(roleAlvo))
+        {
+            await Service.ToggleRoleAsync(user.Id, roleAlvo); // Remove
+        }
+        else
+        {
+            // 2. Se é uma role nova:
+            // PRIMEIRO removemos TODAS as outras roles que ele tenha
+            foreach (var r in rolesAtuais)
+            {
+                await Service.ToggleRoleAsync(user.Id, r); // Remove a antiga
+            }
+
+            // SEGUNDO adicionamos a nova
+            await Service.ToggleRoleAsync(user.Id, roleAlvo); // Adiciona a nova
+        }
+
+        // Atualizar UI
+        userRoles[user.Id] = await Service.GetUserRolesAsync(user);
+    }
+
+    // Helpers Visuais
+    private string GetIniciais(string nome)
+    {
+        if (string.IsNullOrEmpty(nome)) return "?";
+        var parts = nome.Split(' ');
+        if (parts.Length == 1) return parts[0].Substring(0, 1).ToUpper();
+        return (parts[0].Substring(0, 1) + parts[parts.Length - 1].Substring(0, 1)).ToUpper();
+    }
+
+    private string GetRoleClass(string role)
+    {
+        return role switch
+        {
+            "Administrador" => "role-admin",
+            "Funcionario" => "role-func",
+            "Fornecedor" => "role-forn",
+            "Cliente" => "role-cli",
+            _ => "bg-secondary text-white"
+        };
+    }
+}

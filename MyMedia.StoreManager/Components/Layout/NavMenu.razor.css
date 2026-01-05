@@ -1,0 +1,86 @@
+.sidebar-container {
+    /* Gradiente Escuro Profissional */
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    height: 100vh;
+    color: #cbd5e1; /* Texto cinza claro */
+    font-family: 'Segoe UI', sans-serif;
+    box-shadow: 4px 0 15px rgba(0,0,0,0.3);
+}
+
+/* Marca */
+.admin-brand {
+    background-color: rgba(0,0,0,0.2);
+    padding: 1rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #fff !important;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Links do Menu */
+.nav-link-admin {
+    color: #94a3b8 !important; /* Texto inativo */
+    padding: 0.75rem 1rem;
+    margin: 4px 12px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+    .nav-link-admin i, .nav-link-admin span.bi {
+        margin-right: 12px;
+        font-size: 1.1rem;
+        transition: transform 0.2s;
+    }
+
+    /* Hover */
+    .nav-link-admin:hover {
+        background-color: rgba(255,255,255,0.08);
+        color: #fff !important;
+        transform: translateX(3px);
+    }
+
+    /* Link Ativo */
+    .nav-link-admin.active {
+        background-color: #4f46e5; /* Azul Indigo Profissional */
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+    }
+
+/* Área de Utilizador (Fundo) */
+.user-section {
+    margin-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 15px;
+}
+
+.logout-btn {
+    background: transparent;
+    border: 1px solid rgba(239, 68, 68, 0.3); /* Vermelho subtil */
+    color: #fca5a5 !important;
+    width: 100%;
+    text-align: left;
+}
+
+    .logout-btn:hover {
+        background: rgba(239, 68, 68, 0.1);
+        border-color: #ef4444;
+        color: #fff !important;
+    }
+
+/* Scrollbar personalizada para ficar discreta */
+.nav-scrollable::-webkit-scrollbar {
+    width: 6px;
+}
+
+.nav-scrollable::-webkit-scrollbar-thumb {
+    background-color: #334155;
+    border-radius: 10px;
+}

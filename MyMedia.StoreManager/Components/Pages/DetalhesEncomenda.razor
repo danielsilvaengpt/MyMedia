@@ -1,0 +1,325 @@
+﻿@page "/encomendas/detalhes/{id:int}"
+@using Microsoft.AspNetCore.Authorization
+@using MyMedia.Shared.Entities
+@using MyMedia.StoreManager.Services
+@inject EncomendaService Service
+@inject NavigationManager NavManager
+@inject IJSRuntime JS
+@rendermode InteractiveServer
+
+@attribute [Authorize(Roles = "Administrador,Funcionario")]
+
+<PageTitle>Encomenda #@Id | Admin</PageTitle>
+
+<div class="admin-container">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <a href="/encomendas" class="btn btn-sm btn-white border rounded-circle shadow-sm" title="Voltar">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <div>
+                <h2 class="page-title mb-0">Encomenda #@Id</h2>
+                <span class="text-muted small">Detalhes e processamento</span>
+            </div>
+        </div>
+
+        @if (encomenda != null)
+        {
+            <div class="bg-white px-3 py-2 rounded shadow-sm">
+                <span class="text-muted small text-uppercase me-2 fw-bold">Estado Atual</span>
+                <span class="badge rounded-pill px-3 py-2 @GetBadgeClass(encomenda.Estado)">
+                    @encomenda.Estado
+                </span>
+            </div>
+        }
+    </div>
+
+    @if (encomenda == null)
+    {
+        <div class="text-center p-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="text-muted mt-2">A carregar detalhes...</p>
+        </div>
+    }
+    else
+    {
+        @if (encomenda.Estado != "Anulada")
+        {
+            <div class="admin-card py-4 mb-4">
+                <div class="status-timeline px-5">
+                    <div class="status-step @GetStepClass("Pendente", encomenda.Estado)">
+                        <div class="step-circle"><i class="bi bi-hourglass-split"></i></div>
+                        <div class="step-label">Pendente</div>
+                    </div>
+                    <div class="status-step @GetStepClass("Confirmada", encomenda.Estado)">
+                        <div class="step-circle"><i class="bi bi-check-lg"></i></div>
+                        <div class="step-label">Confirmada</div>
+                    </div>
+                    <div class="status-step @GetStepClass("Pago", encomenda.Estado)">
+                        <div class="step-circle"><i class="bi bi-currency-dollar"></i></div>
+                        <div class="step-label">Pago</div>
+                    </div>
+                    <div class="status-step @GetStepClass("Expedido", encomenda.Estado)">
+                        <div class="step-circle"><i class="bi bi-truck"></i></div>
+                        <div class="step-label">Expedido</div>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-danger mb-4 shadow-sm border-0 d-flex align-items-center">
+                <i class="bi bi-x-circle-fill fs-4 me-3"></i>
+                <div>
+                    <strong>Esta encomenda foi anulada.</strong>
+                    <div class="small">Não é possível realizar mais ações.</div>
+                </div>
+            </div>
+        }
+
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="admin-card mb-4">
+                    <div class="card-header-custom">Informação do Cliente</div>
+                    <div class="d-flex align-items-center p-3">
+                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px; font-size: 1.2rem;">
+                            <i class="bi bi-person text-secondary"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0 text-dark">@(encomenda.Cliente?.NomeCompleto ?? "Desconhecido")</h5>
+                            <div class="text-muted">@encomenda.Cliente?.Email</div>
+                            <div class="small text-muted mt-1">
+                                <i class="bi bi-calendar3 me-1"></i> @encomenda.DataEncomenda.ToString("dd 'de' MMMM 'de' yyyy 'às' HH:mm")
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="admin-card">
+                    <div class="card-header-custom d-flex justify-content-between">
+                        <span>Itens da Encomenda</span>
+                        <span>@encomenda.Detalhes?.Count itens</span>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-items mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50%;">Produto</th>
+                                    <th class="text-center" style="width: 15%;">Qtd</th>
+                                    <th class="text-end" style="width: 15%;">Preço</th>
+                                    <th class="text-end" style="width: 20%;">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in encomenda.Detalhes)
+                                {
+                                    <tr>
+                                        <td>
+                                            @if (item.Produto != null)
+                                            {
+                                                <div class="fw-bold text-dark">@item.Produto.Titulo</div>
+                                                @if (item.Produto.Stock <= 5 && encomenda.Estado == "Pendente")
+                                                {
+                                                    <span class="badge bg-warning text-dark mt-1" style="font-size: 0.65rem;">
+                                                        Stock Baixo: @item.Produto.Stock
+                                                    </span>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span class="text-danger fst-italic">(Produto Removido)</span>
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-light text-dark border px-3">@item.Quantidade</span>
+                                        </td>
+                                        <td class="text-end text-muted">@item.PrecoUnitario.ToString("C")</td>
+                                        <td class="text-end fw-bold text-dark">@item.Subtotal.ToString("C")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot style="border-top: 2px solid #f1f5f9;">
+                                <tr>
+                                    <td colspan="3" class="text-end pt-3 text-muted text-uppercase small fw-bold">Total Final</td>
+                                    <td class="text-end pt-3 fs-5 fw-bold text-primary">
+                                        @encomenda.ValorTotal.ToString("C")
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="admin-card h-100 p-3">
+                    <div class="card-header-custom mb-3">Ações de Gestão</div>
+
+                    <div class="d-flex flex-column gap-3">
+                        @if (encomenda.Estado == "Pendente")
+                        {
+                            <button class="btn-action-lg btn-confirm w-100" @onclick="Confirmar">
+                                <i class="bi bi-check2-circle fs-5"></i> Confirmar Encomenda
+                            </button>
+                            <div class="text-muted small text-center px-3">
+                                Ao confirmar, indicas ao cliente que a encomenda foi aceite e aguarda pagamento.
+                            </div>
+                            <hr class="my-2 opacity-10">
+                            <button class="btn-action-lg btn-cancel w-100" @onclick="Rejeitar">
+                                <i class="bi bi-x-circle fs-5"></i> Rejeitar / Anular
+                            </button>
+
+                            @if (!string.IsNullOrEmpty(mensagemErroStock))
+                            {
+                                <div class="alert alert-danger border-0 shadow-sm mt-3 position-relative" style="border-left: 4px solid #dc3545 !important;">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+                                        <div class="small fw-bold">@mensagemErroStock</div>
+                                    </div>
+                                    <button type="button" class="btn-close position-absolute top-0 end-0 p-2" style="font-size: 0.6rem;" @onclick="() => mensagemErroStock = null"></button>
+                                </div>
+                            }
+                        }
+                        else if (encomenda.Estado == "Confirmada")
+                        {
+                            <div class="alert alert-info border-0 d-flex align-items-center small mb-0">
+                                <i class="bi bi-info-circle-fill me-2 fs-5"></i>
+                                Aguardando pagamento do cliente.
+                            </div>
+                            <button class="btn-action-lg btn-pay w-100" @onclick="SimularPagamento">
+                                <i class="bi bi-credit-card-2-front fs-5"></i> Registar Pagamento
+                            </button>
+                            <button class="btn btn-outline-danger w-100 border-0 mt-2" @onclick="Rejeitar">
+                                Cancelar Encomenda
+                            </button>
+                        }
+                        else if (encomenda.Estado == "Pago")
+                        {
+                            <div class="alert alert-success border-0 d-flex align-items-center small mb-0">
+                                <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+                                Pagamento recebido. Pronto para envio.
+                            </div>
+                            <button class="btn-action-lg btn-ship w-100" @onclick="Expedir">
+                                <i class="bi bi-box-seam fs-5"></i> Expedir Encomenda
+                            </button>
+                            <div class="text-warning small text-center fst-italic mt-2">
+                                <i class="bi bi-exclamation-triangle"></i> Atenção: Esta ação irá descontar o stock dos produtos.
+                            </div>
+                        }
+                        else if (encomenda.Estado == "Expedido")
+                        {
+                            <div class="text-center py-4">
+                                <div class="mb-3 text-success">
+                                    <i class="bi bi-check-circle-fill" style="font-size: 3rem;"></i>
+                                </div>
+                                <h5 class="fw-bold text-dark">Processo Concluído</h5>
+                                <p class="text-muted small">A encomenda foi expedida e finalizada com sucesso.</p>
+                            </div>
+                        }
+                        else if (encomenda.Estado == "Anulada")
+                        {
+                            <div class="text-center py-4">
+                                <div class="mb-3 text-danger opacity-50">
+                                    <i class="bi bi-slash-circle" style="font-size: 3rem;"></i>
+                                </div>
+                                <h5 class="fw-bold text-muted">Encomenda Anulada</h5>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private Encomenda? encomenda;
+    private string? mensagemErroStock;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await CarregarDados();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private async Task CarregarDados()
+    {
+        encomenda = await Service.GetEncomendaByIdAsync(Id);
+    }
+
+    private async Task Confirmar()
+    {
+        mensagemErroStock = null;
+
+        if (encomenda != null && encomenda.Detalhes != null)
+        {
+            foreach (var item in encomenda.Detalhes)
+            {
+                if (item.Produto != null && item.Produto.Stock < item.Quantidade)
+                {
+                    mensagemErroStock = $"Falta Stock: '{item.Produto.Titulo}' (Stock: {item.Produto.Stock}, Pedido: {item.Quantidade}).";
+                    return;
+                }
+            }
+        }
+
+        await Service.ConfirmarEncomendaAsync(Id);
+        await CarregarDados();
+    }
+
+    private async Task Rejeitar()
+    {
+        bool confirmado = await JS.InvokeAsync<bool>("confirm", "Tens a certeza que queres anular esta encomenda? Esta ação é irreversível.");
+        if (confirmado)
+        {
+            await Service.RejeitarEncomendaAsync(Id);
+            await CarregarDados();
+        }
+    }
+
+    private async Task SimularPagamento()
+    {
+        await Service.SimularPagamentoAsync(Id);
+        await CarregarDados();
+    }
+
+    private async Task Expedir()
+    {
+        await Service.ExpedirEncomendaAsync(Id);
+        await CarregarDados();
+    }
+
+    private string GetBadgeClass(string estado)
+    {
+        return estado switch
+        {
+            "Pendente" => "bg-warning text-dark",
+            "Confirmada" => "bg-primary text-white",
+            "Pago" => "bg-info text-white",
+            "Expedido" => "bg-success text-white",
+            "Anulada" => "bg-danger text-white",
+            _ => "bg-secondary text-white"
+        };
+    }
+
+    private string GetStepClass(string stepName, string currentState)
+    {
+        var states = new List<string> { "Pendente", "Confirmada", "Pago", "Expedido" };
+        int stepIndex = states.IndexOf(stepName);
+        int currentIndex = states.IndexOf(currentState);
+
+        if (currentIndex == -1) return "";
+        if (stepIndex < currentIndex) return "step-completed";
+        if (stepIndex == currentIndex) return "step-active";
+        return "";
+    }
+}

@@ -1,0 +1,154 @@
+﻿/* Estilo Admin Geral */
+.admin-container {
+    background-color: #f1f5f9;
+    min-height: 100vh;
+    padding: 2rem;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.page-title {
+    color: #1e293b;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+/* Cartões */
+.admin-card {
+    background: white;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+/* Barra de Filtros */
+.filter-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 4px;
+}
+
+.form-select {
+    border-color: #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+    .form-select:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+/* Tabela */
+.table-admin thead {
+    background-color: #1e293b;
+    color: #f8fafc;
+}
+
+.table-admin th {
+    font-weight: 600;
+    border: none;
+    padding: 15px;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.table-admin td {
+    padding: 15px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+}
+
+/* Badges de Estado */
+.badge-status {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    border: 1px solid transparent;
+}
+
+.badge-pendente {
+    background-color: #fef9c3;
+    color: #854d0e;
+    border-color: #fde047;
+}
+/* Amarelo */
+.badge-pago {
+    background-color: #dbeafe;
+    color: #1e40af;
+    border-color: #93c5fd;
+}
+/* Azul */
+.badge-expedido {
+    background-color: #dcfce7;
+    color: #166534;
+    border-color: #86efac;
+}
+/* Verde */
+.badge-anulada {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border-color: #fca5a5;
+}
+/* Vermelho */
+.badge-confirmada {
+    background-color: #e0e7ff;
+    color: #3730a3;
+    border-color: #c7d2fe;
+}
+/* Indigo */
+
+/* Botão Ação */
+.btn-view {
+    background-color: #f8fafc;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+    .btn-view:hover {
+        background-color: #e2e8f0;
+        color: #1e293b;
+    }
+
+/* Botão de Ação com Texto */
+.btn-view-text {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 16px;
+    background-color: white;
+    border: 1px solid #e2e8f0; /* Cor de borda neutra */
+    border-radius: 6px; /* Cantos minimalistas */
+    color: #1e293b; /* Texto Slate Navy */
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+    .btn-view-text:hover {
+        background-color: #f1f5f9;
+        border-color: #1e293b;
+        color: #0f172a;
+        transform: translateY(-1px);
+    }
+
+    /* Ajuste da Imagem dentro do botão */
+    .btn-view-text .icon-img {
+        width: 14px;
+        height: 14px;
+        object-fit: contain;
+    }

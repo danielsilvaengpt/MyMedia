@@ -1,0 +1,303 @@
+﻿@page "/produtos"
+@using Microsoft.AspNetCore.Authorization
+@using MyMedia.Shared.Entities
+@using MyMedia.StoreManager.Services
+@inject ProdutoService Service
+@inject CategoriaService CatService
+@inject NavigationManager NavManager
+@rendermode InteractiveServer
+
+@attribute [Authorize(Roles = "Administrador,Funcionario")]
+
+<PageTitle>Gestão de Produtos | Admin</PageTitle>
+
+<div class="admin-container">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="page-title mb-0">Gestão de Produtos</h2>
+            <p class="text-muted small mb-0">Gerencie o catálogo, stock e visibilidade.</p>
+        </div>
+        <a href="/produtos/criar" class="btn btn-create shadow-sm">
+            <i class="bi bi-plus-lg me-2"></i> Novo Produto
+        </a>
+    </div>
+
+    <div class="admin-card mb-4 p-4">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="filter-label">Pesquisar</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input class="form-control border-start-0 ps-0" placeholder="Título do produto..."
+                           @bind="FiltroTitulo" @bind:event="oninput" @onkeyup="AtualizarLista" />
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="filter-label">Categoria</label>
+                <select class="form-select" @bind="FiltroCategoria" @bind:after="AtualizarLista">
+                    <option value="0">Todas as Categorias</option>
+                    @foreach (var c in listaCategorias)
+                    {
+                        <option value="@c.Id">@c.Nome</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="filter-label">Estado</label>
+                <select class="form-select" @bind="FiltroEstado" @bind:after="AtualizarLista">
+                    <option value="">Todos</option>
+                    <option value="Ativo">Ativos</option>
+                    <option value="Pendente">Pendentes</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end justify-content-end">
+                <span class="badge bg-light text-dark border px-3 py-2">
+                    <i class="bi bi-list-ol me-1"></i> @totalItems resultados
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-card">
+        @if (produtosVisiveis == null)
+        {
+            <div class="p-5 text-center">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="text-muted mt-2">A carregar dados...</p>
+            </div>
+        }
+        else if (!produtosVisiveis.Any())
+        {
+            <div class="p-5 text-center text-muted">
+                <i class="bi bi-inbox fs-1 d-block mb-3 opacity-25"></i>
+                <h5>Nenhum produto encontrado.</h5>
+                <p class="small">Tente ajustar os filtros acima.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-admin table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th class="sortable-th" @onclick='() => OrdenarPor("Id")' style="width: 80px;">
+                                ID @GetIconeOrdenacao("Id")
+                            </th>
+                            <th class="sortable-th" @onclick='() => OrdenarPor("Titulo")'>
+                                Produto @GetIconeOrdenacao("Titulo")
+                            </th>
+                            <th class="sortable-th" @onclick='() => OrdenarPor("Categoria")'>
+                                Categoria @GetIconeOrdenacao("Categoria")
+                            </th>
+
+                            <th class="sortable-th" @onclick='() => OrdenarPor("ModoDisponibilizacao")'>
+                                Modo @GetIconeOrdenacao("ModoDisponibilizacao")
+                            </th>
+
+                            <th class="sortable-th text-end" @onclick='() => OrdenarPor("Preco")'>
+                                Preço @GetIconeOrdenacao("Preco")
+                            </th>
+                            <th class="sortable-th text-center" @onclick='() => OrdenarPor("Estado")'>
+                                Estado @GetIconeOrdenacao("Estado")
+                            </th>
+                            <th class="text-end" style="width: 150px;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in produtosVisiveis)
+                        {
+                            <tr>
+                                <td class="fw-bold text-muted">#@p.Id</td>
+                                <td>
+                                    <span class="fw-bold text-dark">@p.Titulo</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-secondary border">
+                                        @(p.Categoria?.Nome ?? "-")
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @if (p.ModoDisponibilizacao != null)
+                                    {
+                                        <span class="badge badge-status badge-mode">
+                                            @p.ModoDisponibilizacao.Nome
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small fst-italic">N/A</span>
+                                    }
+                                </td>
+
+                                <td class="text-end fw-bold text-dark">
+                                    @p.PrecoFinal.ToString("C")
+                                </td>
+
+                                <td class="text-center">
+                                    @if (p.Ativo)
+                                    {
+                                        <span class="badge badge-status badge-active">Ativo</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-status badge-pending">Pendente</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <a href="/produtos/editar/@p.Id" class="btn-action btn-edit me-1" title="Editar">
+                                        <img src="Images/edicao.png" alt="Editar" class="icon-img" />
+                                    </a>
+
+                                    <button class="btn-action btn-toggle me-1" @onclick="() => ToggleVisibilidade(p)" title="@(p.Ativo ? "Desativar" : "Ativar")">
+                                        <img src="Images/ativar.png" alt="Visibilidade" class="icon-img" />
+                                    </button>
+									
+                                    <button class="btn-action btn-delete" @onclick="() => ApagarProduto(p)" title="Apagar">
+                                        <img src="Images/delete.png" alt="Apagar" class="icon-img" />
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center p-3 border-top bg-light">
+                <div class="small text-muted">
+                    Página <strong>@paginaAtual</strong> de <strong>@totalPaginas</strong>
+                </div>
+                <div>
+                    <button class="btn btn-sm btn-white border me-1" @onclick="PaginaAnterior" disabled="@(paginaAtual == 1)">
+                        <i class="bi bi-chevron-left"></i> Anterior
+                    </button>
+                    <button class="btn btn-sm btn-white border" @onclick="PaginaSeguinte" disabled="@(paginaAtual == totalPaginas)">
+                        Seguinte <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    // --- LÓGICA C# (Mantida exatamente igual à tua versão) ---
+
+    private List<Produto> todosProdutos = new();
+    private List<Produto>? produtosVisiveis;
+    private List<Categoria> listaCategorias = new();
+
+    private string FiltroTitulo { get; set; } = "";
+    private int FiltroCategoria { get; set; } = 0;
+    private string FiltroEstado { get; set; } = "";
+
+    private int paginaAtual = 1;
+    private int tamanhoPagina = 8; // Aumentei ligeiramente para aproveitar o ecrã
+    private int totalItems = 0;
+    private int totalPaginas = 1;
+
+    private string colunaOrdenacao = "Id";
+    private bool ordemAscendente = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        todosProdutos = await Service.GetProdutosAsync();
+        listaCategorias = await CatService.GetCategoriasAsync();
+        AtualizarLista();
+    }
+
+    private void AtualizarLista()
+    {
+        var query = todosProdutos.AsQueryable();
+
+        if (!string.IsNullOrEmpty(FiltroTitulo))
+            query = query.Where(p => p.Titulo.Contains(FiltroTitulo, StringComparison.OrdinalIgnoreCase));
+
+        if (FiltroCategoria > 0)
+            query = query.Where(p => p.CategoriaId == FiltroCategoria);
+
+        if (!string.IsNullOrEmpty(FiltroEstado))
+        {
+            bool ativo = FiltroEstado == "Ativo";
+            query = query.Where(p => p.Ativo == ativo);
+        }
+
+        query = colunaOrdenacao switch
+        {
+            "Titulo" => ordemAscendente ? query.OrderBy(p => p.Titulo) : query.OrderByDescending(p => p.Titulo),
+            "Categoria" => ordemAscendente ? query.OrderBy(p => p.Categoria!.Nome) : query.OrderByDescending(p => p.Categoria!.Nome),
+            "ModoDisponibilizacao" => ordemAscendente
+                ? query.OrderBy(p => p.ModoDisponibilizacao != null ? p.ModoDisponibilizacao.Nome : "")
+                : query.OrderByDescending(p => p.ModoDisponibilizacao != null ? p.ModoDisponibilizacao.Nome : ""),
+            "Preco" => ordemAscendente ? query.OrderBy(p => p.PrecoFinal) : query.OrderByDescending(p => p.PrecoFinal),
+            "Estado" => ordemAscendente ? query.OrderBy(p => p.Ativo) : query.OrderByDescending(p => p.Ativo),
+            _ => ordemAscendente ? query.OrderBy(p => p.Id) : query.OrderByDescending(p => p.Id)
+        };
+
+        totalItems = query.Count();
+        totalPaginas = (int)Math.Ceiling((double)totalItems / tamanhoPagina);
+
+        if (paginaAtual > totalPaginas) paginaAtual = totalPaginas;
+        if (paginaAtual < 1) paginaAtual = 1;
+
+        if (totalItems > 0)
+        {
+            produtosVisiveis = query
+                .Skip((paginaAtual - 1) * tamanhoPagina)
+                .Take(tamanhoPagina)
+                .ToList();
+        }
+        else
+        {
+            produtosVisiveis = new List<Produto>();
+        }
+    }
+
+    private void OrdenarPor(string coluna)
+    {
+        if (colunaOrdenacao == coluna)
+            ordemAscendente = !ordemAscendente;
+        else
+        {
+            colunaOrdenacao = coluna;
+            ordemAscendente = true;
+        }
+        AtualizarLista();
+    }
+
+    private string GetIconeOrdenacao(string coluna)
+    {
+        if (colunaOrdenacao != coluna) return "";
+        return ordemAscendente ? "▲" : "▼";
+    }
+
+    private void PaginaAnterior()
+    {
+        if (paginaAtual > 1) { paginaAtual--; AtualizarLista(); }
+    }
+
+    private void PaginaSeguinte()
+    {
+        if (paginaAtual < totalPaginas) { paginaAtual++; AtualizarLista(); }
+    }
+
+    private async Task ToggleVisibilidade(Produto p)
+    {
+        await Service.ToggleVisibilidadeAsync(p.Id);
+
+        var produtoNaLista = todosProdutos.FirstOrDefault(x => x.Id == p.Id);
+        if (produtoNaLista != null) produtoNaLista.Ativo = !produtoNaLista.Ativo;
+        AtualizarLista();
+    }
+
+    private async Task ApagarProduto(Produto p)
+    {
+        bool sucesso = await Service.DeleteProdutoAsync(p.Id);
+        if (sucesso)
+        {
+            todosProdutos.Remove(p);
+            AtualizarLista();
+        }
+    }
+}
