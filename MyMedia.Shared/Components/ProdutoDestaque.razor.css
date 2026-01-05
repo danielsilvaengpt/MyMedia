@@ -1,0 +1,31 @@
+﻿.product-highlight-card {
+    border-radius: 15px; /* Cantos menos redondos para poupar espaço */
+    max-width: 900px; /* Impede que fique demasiado largo em ecrãs grandes */
+    margin: 0 auto; /* Centra o cartão */
+}
+
+.highlight-content {
+    /* Gradiente Premium (Mantido, mas ajustado) */
+    background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+}
+
+.highlight-img {
+    max-height: 180px; /* Reduzido de 300px para 180px */
+    width: auto;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.product-highlight-card:hover .highlight-img {
+    transform: scale(1.05) rotate(2deg);
+}
+
+.btn-offer {
+    color: #1a2980 !important;
+    transition: transform 0.2s;
+    font-size: 0.9rem;
+}
+
+    .btn-offer:hover {
+        transform: translateX(5px); /* Move para o lado em vez de cima */
+    }

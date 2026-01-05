@@ -1,0 +1,164 @@
+# Estrutura e Arquitetura Detalhada da Solução MyMedia
+
+Esta solução implementa uma arquitetura de e-commerce completa utilizando o ecossistema .NET 8. A arquitetura é dividida em Backend (API), Frontend Partilhado (Shared), Backoffice (StoreManager), Loja Online (Web/WASM) e Aplicação Móvel (MAUI).
+
+---
+
+## 1. MyMedia.API (Backend Central)
+**Tipo:** ASP.NET Core Web API
+**Descrição:** O cérebro da solução. Centraliza toda a lógica de acesso a dados, regras de negócio críticas e autenticação. Nenhum cliente (Web ou Mobile) acede à base de dados diretamente; tudo passa por aqui.
+
+### Ficheiros Principais:
+*   **`Program.cs`**: Ponto de entrada. Configura a injeção de dependências (DbContext, Identity, Swagger), autenticação JWT e o pipeline de middleware HTTP.
+*   **`appsettings.json`**: Guarda configurações sensíveis como a *ConnectionString* da base de dados e a chave secreta para assinatura de Tokens JWT.
+*   **`Data/ApplicationDbContext.cs`**: Representa a sessão com a base de dados (Entity Framework Core). Define os `DbSet<T>` (tabelas) e relações entre entidades.
+
+### Controllers (`Controllers/`):
+*   **`AuthController.cs`**: Gere autenticação.
+    *   `Login`: Valida credenciais e emite Token JWT.
+    *   `Register`: Cria novos utilizadores (Clientes/Fornecedores).
+*   **`ProdutosController.cs`**: API REST para produtos.
+    *   `Get`: Retorna produtos (filtra inativos para público, mostra tudo para admin/fornecedor).
+    *   `Post/Put`: Criação e edição de produtos (com upload de imagem em byte[]).
+*   **`EncomendasController.cs`**: Processamento de vendas.
+    *   `Checkout`: Recebe o carrinho e cria a encomenda na BD.
+    *   `Get`: Histórico de encomendas do utilizador ou lista geral para admins.
+    *   `Patch`: Atualização de estados (Pendente -> Confirmada -> Expedida).
+*   **`CategoriasController.cs`** & **`ModosDisponibilizacaoController.cs`**: CRUDs auxiliares para classificações.
+
+---
+
+## 2. MyMedia.Shared (Biblioteca de UI e Lógica Partilhada)
+**Tipo:** Razor Class Library (RCL)
+**Descrição:** Contém 90% da interface de utilizador (UI) e lógica de cliente. Permite que a Loja Web e a App Mobile sejam idênticas visualmente e funcionalmente sem duplicar código.
+
+### Entidades (`Entities/`):
+*   **`Produto.cs`**: Modelo de dados do produto. Contém propriedades como `Titulo`, `PrecoBase`, `Imagem` (byte[]) e lógica de `PrecoFinal` (com margem).
+*   **`Encomenda.cs`**: Cabeçalho da encomenda (Cliente, Data, Total, Estado).
+*   **`DetalheEncomenda.cs`**: Linhas da encomenda (Produto, Quantidade, Preço no momento da compra).
+*   **`ApplicationUser.cs`**: Extensão do utilizador do Identity (adiciona `NomeCompleto`, `NIF`, etc.).
+
+### Serviços de Cliente (`Services/`):
+*   **`ApiClient.cs`**: Wrapper genérico para chamadas HTTP. Facilita GET/POST/PUT/DELETE para a API.
+*   **`AuthService.cs`**: Gere o estado de login no cliente. Guarda o Token no LocalStorage e notifica a app de mudanças de estado.
+*   **`CarrinhoService.cs`**: Gere o carrinho de compras em memória (adicionar/remover itens, calcular totais) e persiste no LocalStorage.
+*   **`ProdutoService.cs`**, **`EncomendaService.cs`**: Proxies que chamam os respetivos Controllers da API.
+
+### Páginas (`Pages/`):
+*   **`Catalogo.razor`**: Página inicial da loja. Lista produtos, filtros por categoria e destaques.
+*   **`DetalhesProduto.razor`**: Página individual de produto. Mostra detalhes e botão "Adicionar ao Carrinho".
+*   **`Carrinho.razor`**: Lista itens selecionados e permite alterar quantidades.
+*   **`Checkout.razor`**: Formulário final de compra (morada, pagamento simulado).
+*   **`Login.razor`** / **`Registo.razor`**: Formulários de autenticação.
+*   **`MinhasEncomendas.razor`**: Histórico de compras do cliente.
+*   **`MeusProdutos.razor`**: (Para Fornecedores) Lista os produtos que o fornecedor vende.
+*   **`CriarProduto.razor`** / **`EditarProduto.razor`**: Formulários para fornecedores gerirem o seu catálogo.
+
+### Componentes (`Components/`):
+*   **`ProductCard.razor`**: O "cartão" visual de um produto usado nas listagens.
+*   **`ProdutoDestaque.razor`**: Componente visual para o produto em destaque no topo do catálogo.
+
+---
+
+## 3. MyMedia.StoreManager (Backoffice Admin)
+**Tipo:** Blazor Server App
+**Descrição:** Aplicação de gestão interna. Corre no servidor e tem acesso direto à base de dados (para performance e segurança total) ou via serviços. Destina-se a Administradores e Funcionários.
+
+### Ficheiros Chave:
+*   **`Data/DbSeeder.cs`**: Script de inicialização. Cria a BD, apaga se necessário (reset), cria Roles (Admin, Funcionario, etc.) e o utilizador Admin padrão.
+*   **`Program.cs`**: Configura serviços Server-Side (Identity, DbContext direto).
+
+### Páginas de Gestão (`Components/Pages/`):
+*   **`Home.razor`**: Dashboard com estatísticas rápidas.
+*   **`Produtos.razor`**: Tabela avançada de gestão de produtos (Aprovar, Editar, Remover).
+*   **`CriarEditarProduto.razor`**: Formulário completo de produto (inclui upload de imagem e definições de stock/margem).
+*   **`Encomendas.razor`**: Lista de todas as encomendas do sistema com filtros de estado.
+*   **`DetalhesEncomenda.razor`**: Fluxo de processamento de encomendas. Permite validar stock, confirmar pagamento e expedir.
+*   **`Utilizadores.razor`**: Gestão de permissões. Permite promover utilizadores a Funcionários ou bloquear contas.
+*   **`Categorias.razor`** / **`ModosList.razor`**: Gestão de tabelas auxiliares.
+
+---
+
+## 4. MyMedia.Web & MyMedia.Web.Client (Loja Online)
+**Tipo:** Blazor Web App (Auto/WebAssembly)
+**Descrição:** A face pública da loja.
+*   **MyMedia.Web (Server)**: Serve a aplicação e lida com pré-renderização (SEO).
+*   **MyMedia.Web.Client (WASM)**: O código que corre no browser do cliente.
+
+### Ficheiros Chave (Client):
+*   **`Program.cs`**: Configura o cliente WASM. Define o endereço base da API e regista os serviços partilhados (`IProdutoService`, etc.).
+*   **`AuthTokenHandler.cs`**: Um `DelegatingHandler` HTTP. Interceta todos os pedidos à API e adiciona automaticamente o cabeçalho `Authorization: Bearer {token}` se o utilizador estiver logado.
+*   **`Layout/NavMenu.razor`**: Menu de navegação principal da loja (Categorias, Carrinho, Login).
+*   **`Layout/MainLayout.razor`**: Estrutura base das páginas (Cabeçalho, Corpo, Rodapé).
+
+---
+
+## 5. MyMedia.Mobile (App Nativa)
+**Tipo:** .NET MAUI (Blazor Hybrid)
+**Descrição:** Aplicação móvel para Android, iOS e Windows. Usa um `BlazorWebView` para renderizar os mesmos componentes do `MyMedia.Shared` dentro de uma app nativa.
+
+### Ficheiros Chave:
+*   **`MauiProgram.cs`**: Equivalente ao `Program.cs` da Web. Configura injeção de dependências para o ambiente mobile.
+    *   *Nota:* Configura o URL da API para `10.0.2.2` em emuladores Android (localhost do PC).
+*   **`MainPage.xaml`**: A página XAML que contém o controlo `BlazorWebView`.
+*   **`Components/Routes.razor`**: Define o router Blazor. Importante: Configurado com `AdditionalAssemblies` para carregar as páginas do projeto `MyMedia.Shared`.
+*   **`AuthTokenHandler.cs`**: Cópia/Adaptação do handler de autenticação para mobile (gere tokens JWT no armazenamento seguro do dispositivo).
+*   **`wwwroot/index.html`**: O "esqueleto" HTML onde a app Blazor é injetada. Inclui referências a CSS (Bootstrap) e JS.
+
+---
+
+## 6. Fluxos de Negócio Principais
+
+### Ciclo de Vida do Produto
+Este fluxo descreve como um produto é criado, validado e disponibilizado na loja.
+
+```mermaid
+graph TD
+    A[Fornecedor Cria Produto] -->|Estado Inicial: Pendente| B(Base de Dados)
+    B --> C{Admin Valida?}
+    C -->|Aprovar| D[Estado: Ativo]
+    C -->|Rejeitar| E[Estado: Rejeitado / Removido]
+    D --> F{Visível na Loja?}
+    F -->|Sim| G[Clientes Podem Comprar]
+    F -->|Não (Stock 0 ou Oculto)| H[Indisponível]
+```
+
+**Descrição do Fluxo:**
+1.  **Inserção:** O Fornecedor acede à área "Meus Produtos" e cria um novo registo. O produto é gravado com `Ativo = false` (Pendente).
+2.  **Validação:** O Administrador acede ao Backoffice (StoreManager), vê a lista de produtos pendentes e decide aprovar ou rejeitar.
+3.  **Ativação:** Se aprovado, o Admin muda o estado para `Ativo = true`.
+4.  **Venda:** O produto aparece na Loja Online (Web/Mobile) para os clientes, desde que tenha Stock > 0.
+
+### Ciclo de Vida da Encomenda
+Fluxo desde a compra até à entrega.
+
+```mermaid
+graph LR
+    A[Cliente Faz Checkout] -->|Estado: Pendente| B(Backoffice)
+    B --> C{Admin/Staff Confirma?}
+    C -->|Sim (Stock OK)| D[Estado: Confirmada]
+    C -->|Não (Stock Insuficiente)| X[Estado: Anulada]
+    D --> E{Pagamento Recebido?}
+    E -->|Sim| F[Estado: Pago]
+    F --> G[Expedição]
+    G --> H[Estado: Expedido]
+    H --> I[Finalizado]
+```
+
+## 7. Arquitetura de Reutilização (RCL)
+Este diagrama ilustra como a Razor Class Library (RCL) centraliza a UI e lógica, alimentando tanto a Web como o Mobile, cumprindo o requisito de "código único".
+
+```mermaid
+graph TD
+    subgraph "Frontend Partilhado (RCL)"
+        Shared[MyMedia.Shared]
+        style Shared fill:#f9f,stroke:#333,stroke-width:4px
+    end
+
+    subgraph "Aplicações Cliente"
+        Web[MyMedia.Web.Client<br/>(Browser / WASM)]
+        Mobile[MyMedia.Mobile<br/>(Android / Windows)]
+    end
+
+    Shared -->|Fornece Páginas, Componentes e Serviços| Web
+    Shared -->|Fornece Páginas, Componentes e Serviços| Mobile
