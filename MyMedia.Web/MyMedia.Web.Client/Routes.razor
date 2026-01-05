@@ -1,0 +1,55 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Routing
+@using MyMedia.Shared.Services
+@using MyMedia.Shared
+
+<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(Program).Assembly"
+            AdditionalAssemblies="new[] { typeof(ApiClient).Assembly }">
+        <Found Context="routeData">
+            
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)">
+                
+                <NotAuthorized>
+                    <div class="container mt-5 text-center">
+                        <div class="alert alert-danger shadow p-4">
+                            <h3 class="mb-3">🚫 Acesso Negado</h3>
+                            
+                            @if (context.User.Identity?.IsAuthenticated == true)
+                            {
+                                <p>Não tens permissão para aceder a esta área.</p>
+                                <a href="/" class="btn btn-outline-dark mt-2">Voltar à Loja</a>
+                            }
+                            else
+                            {
+                                <p>Precisas de fazer login para continuar.</p>
+                                <a href="login" class="btn btn-primary mt-2">Ir para Login</a>
+                            }
+                        </div>
+                    </div>
+                </NotAuthorized>
+
+                <Authorizing>
+                    <div class="text-center mt-5">
+                        <div class="spinner-border text-primary"></div>
+                        <p>A verificar permissões...</p>
+                    </div>
+                </Authorizing>
+
+            </AuthorizeRouteView>
+            
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        
+        <NotFound>
+            <PageTitle>Página não encontrada</PageTitle>
+            <LayoutView Layout="@typeof(Layout.MainLayout)">
+                <div class="p-4 text-center">
+                    <h3>Ups! Esta página não existe.</h3>
+                    <p>Parece que te perdeste no catálogo.</p>
+                </div>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>

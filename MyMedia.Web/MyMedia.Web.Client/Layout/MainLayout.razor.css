@@ -1,0 +1,38 @@
+﻿/* Define o layout como uma coluna vertical (Menu no topo, resto em baixo) */
+.page {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* O corpo principal ocupa o espaço todo disponível */
+main {
+    flex: 1;
+}
+
+/* ⚠️ ISTO É O MAIS IMPORTANTE: */
+/* Garante que a barra lateral antiga desaparece completamente */
+.sidebar {
+    display: none !important;
+}
+
+/* --- Mantém o estilo de erros do Blazor (é útil para debug) --- */
+#blazor-error-ui {
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }
