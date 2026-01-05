@@ -1,0 +1,159 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using MyMedia.Shared.Services
+@using MyMedia.Shared.Interfaces
+@implements IDisposable
+
+@inject IAuthService AuthService
+@inject ICarrinhoService Carrinho
+@inject NavigationManager Nav
+
+
+<nav class="navbar navbar-expand-lg navbar-dark navbar-mymedia sticky-top">
+    <div class="container-fluid">
+
+        @* 1. LOGO *@
+        <a class="navbar-brand brand-mymedia me-4" href="">
+            <i class="bi bi-play-circle-fill"></i> MyMedia
+        </a>
+
+        @* Botão Mobile *@
+        <button class="navbar-toggler border-0" type="button" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="@NavMenuCssClass navbar-collapse justify-content-between" @onclick="ToggleNavMenu">
+
+            @* 2. LINKS CENTRAIS *@
+            <ul class="navbar-nav align-items-center mx-auto">
+
+                @* Carrinho *@
+                <li class="nav-item mx-1">
+                    <NavLink class="nav-link nav-link-custom" href="carrinho">
+                        <i class="bi bi-cart3 fs-5"></i>
+                        <span>Carrinho</span>
+                        @if (contador > 0)
+                        {
+                            <span class="badge-cart animate__animated animate__zoomIn">@contador</span>
+                        }
+                    </NavLink>
+                </li>
+
+                @* Role: CLIENTE *@
+                <AuthorizeView Roles="Cliente">
+                    <li class="nav-item mx-1">
+                        <NavLink class="nav-link nav-link-custom" href="encomendas/minhas">
+                            <i class="bi bi-box-seam fs-5"></i>
+                            <span>Minhas Encomendas</span>
+                        </NavLink>
+                    </li>
+                </AuthorizeView>
+
+                @* Role: FORNECEDOR *@
+                <AuthorizeView Roles="Fornecedor">
+                    <li class="nav-item mx-1">
+                        <NavLink class="nav-link nav-link-custom" href="meus-produtos">
+                            <i class="bi bi-grid fs-5"></i>
+                            <span>Produtos</span>
+                        </NavLink>
+                    </li>
+                    <li class="nav-item mx-1">
+                        <NavLink class="nav-link nav-link-custom" href="meus-produtos/vendas">
+                            <i class="bi bi-graph-up-arrow fs-5"></i>
+                            <span>Vendas</span>
+                        </NavLink>
+                    </li>
+                </AuthorizeView>
+
+                @* Role: ADMIN *@
+                <AuthorizeView Roles="Admin">
+                    <li class="nav-item mx-1">
+                        <NavLink class="nav-link nav-link-custom" href="admin/encomendas">
+                            <i class="bi bi-shield-lock fs-5"></i>
+                            <span>Admin</span>
+                        </NavLink>
+                    </li>
+                </AuthorizeView>
+            </ul>
+
+            @* 3. ÁREA DE UTILIZADOR *@
+            <div class="d-flex align-items-center gap-3">
+                <AuthorizeView>
+                    <Authorized>
+                        <div class="dropdown">
+                            @* Botão User Estilizado *@
+                            <button class="btn user-btn dropdown-toggle fw-bold d-flex align-items-center gap-2"
+                                    type="button"
+                                    @onclick="ToggleMenuUser"
+                                    @onclick:stopPropagation="true">
+                                <i class="bi bi-person-circle fs-5"></i>
+                                <span>@context.User.Identity?.Name</span>
+                            </button>
+
+                            @* Menu Dropdown Limpo *@
+                            <ul class="dropdown-menu dropdown-menu-end custom-dropdown animate__animated animate__fadeIn @(mostrarMenuUser ? "show" : "")">
+                                <li>
+                                    <button class="dropdown-item text-danger fw-bold d-flex align-items-center gap-2" @onclick="BeginLogout">
+                                        <i class="bi bi-box-arrow-right"></i> Terminar Sessão
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </Authorized>
+
+                    <NotAuthorized>
+                        <a href="login" class="btn btn-outline-light border-0 fw-bold btn-sm me-2">
+                            Entrar
+                        </a>
+                        <a href="registar" class="btn btn-light text-primary fw-bold btn-sm rounded-pill px-3">
+                            Criar Conta
+                        </a>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </div>
+
+        </div>
+    </div>
+</nav>
+
+@code {
+    private bool collapseNavMenu = true;
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private bool mostrarMenuUser = false;
+    private int contador = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Carrinho.OnChange += AtualizarUI;
+        contador = await Carrinho.ContarItens();
+    }
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+
+    private void ToggleMenuUser()
+    {
+        mostrarMenuUser = !mostrarMenuUser;
+    }
+
+    private async void AtualizarUI()
+    {
+        contador = await Carrinho.ContarItens();
+        StateHasChanged();
+    }
+
+    private async Task BeginLogout()
+    {
+        mostrarMenuUser = false;
+        await AuthService.Logout();
+        Nav.NavigateTo("/login", forceLoad: false);
+    }
+
+    public void Dispose()
+    {
+        Carrinho.OnChange -= AtualizarUI;
+    }
+}
