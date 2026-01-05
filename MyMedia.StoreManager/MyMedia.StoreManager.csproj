@@ -1,0 +1,60 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>aspnet-MyMedia.StoreManager-a826d9de-d8ad-4e41-966f-a5d06d7a81a3</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Components\Images\**" />
+    <Compile Remove="Components\Pages\Images\**" />
+    <Compile Remove="Services - Cópia\**" />
+    <Content Remove="Components\Images\**" />
+    <Content Remove="Components\Pages\Images\**" />
+    <Content Remove="Services - Cópia\**" />
+    <EmbeddedResource Remove="Components\Images\**" />
+    <EmbeddedResource Remove="Components\Pages\Images\**" />
+    <EmbeddedResource Remove="Services - Cópia\**" />
+    <None Remove="Components\Images\**" />
+    <None Remove="Components\Pages\Images\**" />
+    <None Remove="Services - Cópia\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="Components\Pages\Counter.razor" />
+    <Content Remove="Components\Pages\Weather.razor" />
+    <Content Remove="wwwroot\Images\ativar.png" />
+    <Content Remove="wwwroot\Images\delete.png" />
+    <Content Remove="wwwroot\Images\edicao.png" />
+    <Content Remove="wwwroot\Images\gerir.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Components\Pages\CriarEditarCategoria.css" />
+    <None Remove="Components\Pages\ModosList.css" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\Images\ativar.png" />
+    <None Include="wwwroot\Images\delete.png" />
+    <None Include="wwwroot\Images\edicao.png" />
+    <None Include="wwwroot\Images\gerir.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.22" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.22" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.22" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.22">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MyMedia.Shared\MyMedia.Shared.csproj" />
+  </ItemGroup>
+
+</Project>
