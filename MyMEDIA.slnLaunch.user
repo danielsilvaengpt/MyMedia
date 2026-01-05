@@ -1,0 +1,19 @@
+[
+  {
+    "Name": "Novo Perfil",
+    "Projects": [
+      {
+        "Path": "MyMedia.API\\MyMedia.API.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "MyMedia.StoreManager\\MyMedia.StoreManager.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "MyMedia.Web\\MyMedia.Web\\MyMedia.Web.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]
