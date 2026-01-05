@@ -1,0 +1,84 @@
+﻿/* Centralizar Verticalmente */
+.login-container {
+    min-height: 80vh; /* Ocupa a altura quase toda */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa; /* Fundo cinza muito claro */
+}
+
+/* O Cartão de Login */
+.login-card {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    overflow: hidden; /* Para o header não sair dos cantos redondos */
+    background: white;
+    transition: transform 0.3s ease;
+}
+
+/* Cabeçalho do Cartão (Gradiente Igual ao Menu) */
+.login-header {
+    background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+    padding: 40px 20px;
+    text-align: center;
+    color: white;
+}
+
+.login-icon {
+    font-size: 3rem;
+    color: #FFC800; /* Amarelo Dourado */
+    margin-bottom: 10px;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+/* Campos de Texto */
+.form-control {
+    border-radius: 10px;
+    padding: 12px;
+    border: 1px solid #e0e0e0;
+    background-color: #fcfcfc;
+}
+
+    .form-control:focus {
+        border-color: #26d0ce;
+        box-shadow: 0 0 0 4px rgba(38, 208, 206, 0.1);
+    }
+
+/* Grupo de Input com Ícone */
+.input-group-text {
+    border: none;
+    background: transparent;
+    color: #1a2980;
+}
+
+/* Botão de Entrar */
+.btn-login {
+    background: linear-gradient(to right, #1a2980, #26d0ce);
+    border: none;
+    border-radius: 50px;
+    padding: 12px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    color: white;
+}
+
+    .btn-login:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(26, 41, 128, 0.4);
+        color: white;
+    }
+
+/* Link de Registar */
+.register-link {
+    color: #1a2980;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+    .register-link:hover {
+        text-decoration: underline;
+        color: #26d0ce;
+    }

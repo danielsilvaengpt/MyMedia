@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <Compile Remove="NovaPasta1\**" />
+	  <Compile Remove="NovaPasta2\**" />
+	  <Compile Remove="NovaPasta\**" />
+	  <Content Remove="NovaPasta1\**" />
+	  <Content Remove="NovaPasta2\**" />
+	  <Content Remove="NovaPasta\**" />
+	  <EmbeddedResource Remove="NovaPasta1\**" />
+	  <EmbeddedResource Remove="NovaPasta2\**" />
+	  <EmbeddedResource Remove="NovaPasta\**" />
+	  <None Remove="NovaPasta1\**" />
+	  <None Remove="NovaPasta2\**" />
+	  <None Remove="NovaPasta\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Remove="DTO\RegisterDto.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Remove="Pages\Carrinho.razor.razor" />
+	  <Content Remove="Pages\Login.razor.razor" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Blazored.LocalStorage" Version="4.3.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.22" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0" />
+
+		<PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="8.0.0" />
+
+		<PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+		<PackageReference Include="System.Net.Http.Json" Version="8.0.0" />
+	</ItemGroup>
+
+</Project>

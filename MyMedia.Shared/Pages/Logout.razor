@@ -1,0 +1,20 @@
+﻿@page "/logout"
+@using MyMedia.Shared.Services
+@inject IAuthService AuthService
+@inject NavigationManager Nav
+
+<div class="container mt-5 text-center">
+    <div class="spinner-border text-primary"></div>
+    <p>A terminar sessão...</p>
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        // Faz o logout mal a página abre
+        await AuthService.Logout();
+
+        // Redireciona
+        Nav.NavigateTo("/");
+    }
+}

@@ -1,0 +1,165 @@
+﻿@page "/meus-produtos"
+@using MyMedia.Shared.Entities
+@using Microsoft.AspNetCore.Authorization
+@using MyMedia.Shared.Interfaces
+@inject IProdutoService ProdutoService
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+@attribute [Authorize(Roles = "Fornecedor")]
+
+
+<div class="container mt-4 catalog-container">
+
+    <div class="page-header animate__animated animate__fadeInDown">
+        <div>
+            <h2 class="page-title"><i class="bi bi-box-seam-fill me-2 text-primary"></i> O Meu Catálogo</h2>
+            <p class="text-muted mb-0">Gere os teus produtos e controla o stock.</p>
+        </div>
+        <a href="/produtos/criar" class="btn-new-product shadow-sm">
+            <i class="bi bi-plus-lg me-2"></i> Novo Produto
+        </a>
+    </div>
+
+    @if (!string.IsNullOrEmpty(mensagemErro))
+    {
+        <div class="alert alert-danger shadow-sm rounded-3 d-flex align-items-center mb-4">
+            <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+            <div>@mensagemErro</div>
+        </div>
+    }
+
+    @if (produtos == null)
+    {
+        <div class="d-flex justify-content-center p-5">
+            <div class="spinner-border text-primary" role="status"></div>
+        </div>
+    }
+    else if (!produtos.Any())
+    {
+        <div class="empty-state animate__animated animate__fadeInUp">
+            <div class="mb-4">
+                <i class="bi bi-shop display-1 text-muted opacity-50"></i>
+            </div>
+            <h4 class="fw-bold text-dark">Ainda não tens produtos</h4>
+            <p class="text-muted mb-4">Começa a vender hoje mesmo adicionando o teu primeiro artigo.</p>
+            <a href="/produtos/criar" class="btn btn-primary rounded-pill px-4 fw-bold">
+                Criar Primeiro Produto
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="custom-table-card animate__animated animate__fadeInUp">
+            <div class="table-responsive">
+                <table class="table custom-table mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 80px;">Imagem</th>
+                            <th>Produto</th>
+                            <th>Categoria</th>
+                            <th>Preço</th>
+                            <th class="text-center">Estado</th>
+                            <th class="text-end">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in produtos)
+                        {
+                            <tr>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(p.ImageUrl))
+                                    {
+                                        <img src="@p.ImageUrl" class="product-thumb" onerror="this.src='/images/placeholder.png'" />
+                                    }
+                                    else
+                                    {
+                                        <div class="empty-placeholder">
+                                            <i class="bi bi-image fs-5"></i>
+                                        </div>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="fw-bold text-dark">@p.Titulo</div>
+                                    <small class="text-muted">
+                                        Stock: <span class="@(p.Stock < 5 ? "text-danger fw-bold" : "")">@p.Stock un.</span>
+                                    </small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-secondary border fw-normal px-3 py-2 rounded-pill">
+                                        @(p.Categoria?.Nome ?? "Sem Categoria")
+                                    </span>
+                                </td>
+                                <td class="fw-bold text-primary">@p.PrecoBase.ToString("C")</td>
+                                <td class="text-center">
+                                    @if (p.Ativo)
+                                    {
+                                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2">
+                                            <i class="bi bi-check-circle-fill me-1"></i> À Venda
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3 py-2" title="Aguarda aprovação">
+                                            <i class="bi bi-clock-fill me-1"></i> Pendente
+                                        </span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <div class="btn-group">
+                                        <a href="/produtos/editar/@p.Id"
+                                           class="btn btn-outline-primary btn-sm me-2 px-3"
+                                           style="border-radius: 20px; font-weight: 600;"
+                                           title="Editar Produto">
+                                            Editar
+                                        </a>
+
+                                        <button class="btn btn-outline-danger btn-sm px-3"
+                                                @onclick="() => ApagarProduto(p)"
+                                                style="border-radius: 20px; font-weight: 600;"
+                                                title="Eliminar Produto">
+                                            Eliminar
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="text-center mt-3 text-muted small">
+            <i class="bi bi-info-circle me-1"></i> Mostrando @produtos.Count produtos
+        </div>
+    }
+</div>
+
+@code {
+    private List<Produto>? produtos;
+    private string mensagemErro = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            mensagemErro = "";
+            produtos = await ProdutoService.GetMeusProdutos();
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = $"Erro ao carregar produtos: {ex.Message}";
+            produtos = new List<Produto>();
+        }
+    }
+
+    private async Task ApagarProduto(Produto p)
+    {
+        bool confirmado = await JS.InvokeAsync<bool>("confirm", $"Tens a certeza que queres apagar '{p.Titulo}'?");
+
+        if (confirmado)
+        {
+            await ProdutoService.DeleteProduto(p.Id);
+            produtos?.Remove(p);
+        }
+    }
+}

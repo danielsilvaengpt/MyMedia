@@ -1,0 +1,196 @@
+﻿@page "/carrinho"
+@using MyMedia.Shared.Interfaces
+@using MyMedia.Shared.Entities
+@inject ICarrinhoService SCarrinho
+@inject NavigationManager Nav
+@implements IDisposable
+
+<PageTitle>O meu Carrinho | MyMedia</PageTitle>
+
+<div class="cart-container container mt-4">
+
+    @if (itens == null)
+    {
+        <div class="d-flex justify-content-center p-5">
+            <div class="spinner-border text-primary" role="status"></div>
+        </div>
+    }
+    else if (itens.Count == 0)
+    {
+        <div class="empty-cart-container animate__animated animate__fadeIn">
+            <i class="bi bi-cart-x empty-icon"></i>
+            <h3 class="fw-bold text-muted">O teu carrinho está vazio</h3>
+            <p class="text-secondary mb-4">Parece que ainda não encontraste o que procuras.</p>
+            <a href="/" class="btn btn-primary rounded-pill px-5 py-2 fw-bold shadow-sm">
+                <i class="bi bi-shop me-2"></i> Ir às Compras
+            </a>
+        </div>
+    }
+    else
+    {
+        <h2 class="page-title animate__animated animate__fadeInDown">
+            <i class="bi bi-bag-check-fill text-warning"></i> O meu Carrinho
+            <span class="badge bg-light text-dark ms-2 fs-6 border align-middle">@itens.Sum(i => i.Quantidade) itens</span>
+        </h2>
+
+        <div class="row animate__animated animate__fadeInUp">
+            <div class="col-lg-8 mb-4">
+                <div class="d-flex flex-column gap-3">
+                    @foreach (var item in itens)
+                    {
+                        // Proteção contra produtos nulos
+                        if (item.Produto == null) continue;
+
+                        <div class="cart-item-card p-3 d-flex align-items-center flex-wrap flex-md-nowrap gap-3">
+                            <div class="flex-shrink-0">
+                                <img src="@(string.IsNullOrEmpty(item.Produto.ImageUrl) ? "/images/placeholder.png" : item.Produto.ImageUrl)"
+                                     class="product-img shadow-sm"
+                                     alt="@item.Produto.Titulo"
+                                     onerror="this.src='/images/placeholder.png';" />
+                            </div>
+
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1 fw-bold text-dark">@item.Produto.Titulo</h6>
+                                <div class="small text-muted mb-1">
+                                    Preço unitário: <span class="fw-bold">@item.Produto.PrecoFinal.ToString("C")</span>
+                                </div>
+
+                                @if (item.Quantidade >= item.Produto.Stock)
+                                {
+                                    <span class="badge bg-warning text-dark border"><i class="bi bi-exclamation-circle"></i> Máx. Stock</span>
+                                }
+                            </div>
+
+                            <div class="d-flex align-items-center bg-light rounded-pill px-2 py-1 border">
+                                <button class="qty-btn border-0 bg-transparent" @onclick="() => DiminuirQuantidade(item)">
+                                    <i class="bi bi-dash">-</i>
+                                </button>
+                                <input type="text" class="qty-input" value="@item.Quantidade" readonly />
+                                <button class="qty-btn border-0 bg-transparent"
+                                        @onclick="() => AumentarQuantidade(item)"
+                                        disabled="@(item.Quantidade >= item.Produto.Stock)">
+                                    <i class="bi bi-plus">+</i>
+                                </button>
+                            </div>
+
+                            <div class="text-end" style="min-width: 80px;">
+                                <div class="fw-bold fs-5 text-primary">@item.Subtotal.ToString("C")</div>
+                            </div>
+
+                            <button class="btn btn-light text-danger rounded-circle p-2"
+                                    @onclick="() => RemoverItem(item)"
+                                    title="Remover">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="summary-card">
+                    <div class="summary-header">
+                        <i class="bi bi-receipt me-2"></i> Resumo do Pedido
+                    </div>
+                    <div class="p-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Subtotal</span>
+                            <span class="fw-bold">@total.ToString("C")</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Envio</span>
+                            <span class="text-success fw-bold">Grátis</span>
+                        </div>
+
+                        <hr class="my-3 opacity-10">
+
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <span class="fs-5 fw-bold text-dark">Total</span>
+                            <span class="fs-3 fw-bold text-primary">@total.ToString("C")</span>
+                        </div>
+
+                        <button class="btn btn-checkout w-100 shadow-sm mb-3" @onclick="IrParaCheckout">
+                            FINALIZAR COMPRA <i class="bi bi-arrow-right-short fs-5 align-middle"></i>
+                        </button>
+
+                        <div class="text-center">
+                            <a href="/" class="text-decoration-none text-muted small fw-bold">
+                                <i class="bi bi-arrow-left"></i> Continuar a Comprar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<CarrinhoItem> itens = new();
+    private decimal total = 0;
+    private Action? onChangeHandler;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CarregarDados();
+
+        // Subscreve a alterações para atualizar em tempo real
+        onChangeHandler = async () => await CarregarDados();
+        SCarrinho.OnChange += onChangeHandler;
+    }
+
+    public void Dispose()
+    {
+        if (onChangeHandler != null)
+            SCarrinho.OnChange -= onChangeHandler;
+    }
+
+    private async Task CarregarDados()
+    {
+        // 1. Obtém os itens
+        var todosItens = await SCarrinho.ObterItens();
+
+        // 2. Filtra itens estragados (onde Produto é null) para não dar erro na tela
+        itens = todosItens.Where(i => i.Produto != null).ToList();
+
+        // 3. Calcula o total
+        total = await SCarrinho.TotalPagar();
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task AumentarQuantidade(CarrinhoItem item)
+    {
+        if (item.Produto != null)
+        {
+            await SCarrinho.AdicionarItem(item.Produto);
+        }
+    }
+
+    private async Task DiminuirQuantidade(CarrinhoItem item)
+    {
+        if (item.Produto == null) return;
+
+        if (item.Quantidade > 1)
+        {
+            await SCarrinho.DiminuirQuantidade(item.Produto.Id);
+        }
+        else
+        {
+            await RemoverItem(item);
+        }
+    }
+
+    private async Task RemoverItem(CarrinhoItem item)
+    {
+        if (item.Produto != null)
+        {
+            await SCarrinho.RemoverItem(item.Produto.Id);
+        }
+    }
+
+    private void IrParaCheckout()
+    {
+        Nav.NavigateTo("/carrinho/checkout");
+    }
+}

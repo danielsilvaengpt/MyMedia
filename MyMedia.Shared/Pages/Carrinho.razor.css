@@ -1,0 +1,118 @@
+﻿/* Estilo Geral Premium */
+.cart-container {
+    background-color: #f8f9fa;
+    min-height: 80vh;
+    padding-bottom: 50px;
+}
+
+.page-title {
+    font-weight: 800;
+    color: #1a2980;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Cartão do Produto */
+.cart-item-card {
+    border: none;
+    border-radius: 15px;
+    background: white;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+    overflow: hidden;
+}
+
+    .cart-item-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+
+.product-img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 10px;
+    background-color: #f1f1f1;
+}
+
+/* Botões de Quantidade */
+.qty-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid #e0e0e0;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    color: #555;
+}
+
+    .qty-btn:hover:not(:disabled) {
+        background-color: #1a2980;
+        color: white;
+        border-color: #1a2980;
+    }
+
+.qty-input {
+    width: 40px;
+    border: none;
+    text-align: center;
+    font-weight: 600;
+    background: transparent;
+}
+
+/* Resumo (Sticky) */
+.summary-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border: none;
+    position: sticky;
+    top: 100px;
+}
+
+.summary-header {
+    background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 15px 15px 0 0;
+    font-weight: 700;
+}
+
+/* Botão Checkout */
+.btn-checkout {
+    background: linear-gradient(to right, #11998e, #38ef7d); /* Verde Moderno */
+    border: none;
+    color: white;
+    font-weight: 700;
+    border-radius: 50px;
+    padding: 12px;
+    transition: all 0.3s;
+}
+
+    .btn-checkout:hover {
+        transform: scale(1.02);
+        box-shadow: 0 5px 15px rgba(56, 239, 125, 0.4);
+        color: white;
+    }
+
+/* Estado Vazio */
+.empty-cart-container {
+    text-align: center;
+    padding: 80px 20px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+.empty-icon {
+    font-size: 5rem;
+    background: -webkit-linear-gradient(#eee, #ccc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 20px;
+}

@@ -1,0 +1,177 @@
+﻿@page "/encomendas/minhas"
+@using MyMedia.Shared.Entities
+@using MyMedia.Shared.Services
+@using Microsoft.AspNetCore.Authorization
+@inject ApiClient Api
+@attribute [Authorize(Roles = "Cliente")]
+
+<div class="container mt-4 orders-container">
+    <h2 class="page-title animate__animated animate__fadeInDown">
+        <i class="bi bi-box-seam text-primary"></i> As Minhas Encomendas
+    </h2>
+
+    @if (encomendas == null)
+    {
+        <div class="d-flex justify-content-center p-5">
+            <div class="spinner-border text-primary" role="status"></div>
+        </div>
+    }
+    else if (!encomendas.Any())
+    {
+        <div class="empty-state animate__animated animate__fadeInUp">
+            <i class="bi bi-cart-x display-1 text-muted mb-3 d-block"></i>
+            <h4 class="fw-bold text-dark">Sem encomendas recentes</h4>
+            <p class="text-muted">Parece que ainda não fizeste nenhuma compra.</p>
+            <a href="/" class="btn btn-primary rounded-pill px-4 py-2 mt-3 shadow-sm fw-bold">
+                <i class="bi bi-shop me-2"></i> Começar a Comprar
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="animate__animated animate__fadeInUp">
+            @foreach (var enc in encomendas)
+            {
+                // Verifica se esta encomenda está aberta
+                bool estaAberto = idsExpandidos.Contains(enc.Id);
+                string corBadge = GetCorEstado(enc.Estado);
+
+                <div class="order-card">
+                    <button class="order-header-btn" @onclick="() => AlternarDetalhes(enc.Id)">
+
+                        <div class="d-flex flex-column align-items-start">
+                            <span class="fs-5 fw-bold text-dark">
+                                <i class="bi bi-hash text-muted"></i>@enc.Id
+                            </span>
+                            <small class="text-muted">
+                                <i class="bi bi-calendar3 me-1"></i> @enc.DataEncomenda.ToShortDateString()
+                            </small>
+                        </div>
+
+                        <div class="d-none d-md-block">
+                            <span class="status-badge bg-@corBadge text-white shadow-sm">
+                                @enc.Estado
+                            </span>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-4">
+                            <span class="fs-5 fw-bold text-primary">@enc.ValorTotal.ToString("C")</span>
+                            <i class="bi bi-chevron-down arrow-icon fs-5 @(estaAberto ? "rotated" : "")"></i>
+                        </div>
+                    </button>
+
+                    <div class="@(estaAberto ? "collapse show" : "collapse")">
+                        <div class="details-section">
+
+                            <div class="d-md-none mb-3">
+                                <span class="status-badge bg-@corBadge text-white">@enc.Estado</span>
+                            </div>
+
+                            <div class="row mb-4">
+                                <div class="col-md-6 mb-3 mb-md-0">
+                                    <div class="d-flex align-items-center gap-3 p-3 bg-white rounded border h-100">
+                                        <i class="bi bi-credit-card-2-front fs-2 text-primary opacity-50"></i>
+                                        <div>
+                                            <div class="info-label">Método de Pagamento</div>
+                                            <div class="info-value">@enc.MetodoPagamento</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center gap-3 p-3 bg-white rounded border h-100">
+                                        <i class="bi bi-geo-alt fs-2 text-danger opacity-50"></i>
+                                        <div>
+                                            <div class="info-label">Morada de Entrega</div>
+                                            <div class="info-value">@enc.MoradaEntrega</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h6 class="fw-bold mb-3"><i class="bi bi-bag me-2"></i>Artigos Encomendados</h6>
+
+                            <div class="table-responsive bg-white rounded border shadow-sm">
+                                <table class="table table-borderless mb-0 product-table align-middle">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th class="ps-4">Produto</th>
+                                            <th class="text-center">Qtd</th>
+                                            <th class="text-end">Unitário</th>
+                                            <th class="text-end pe-4">Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (enc.Detalhes != null)
+                                        {
+                                            @foreach (var item in enc.Detalhes)
+                                            {
+                                                <tr>
+                                                    <td class="ps-4">
+                                                        <div class="d-flex align-items-center gap-3">
+                                                            @if (!string.IsNullOrEmpty(item.Produto?.ImageUrl))
+                                                            {
+                                                                <img src="@item.Produto.ImageUrl" class="product-img-small" onerror="this.style.display='none'" />
+                                                            }
+                                                            <span class="fw-bold text-dark">@(item.Produto?.Titulo ?? "Produto Indisponível")</span>
+                                                        </div>
+                                                    </td>
+                                                    <td class="text-center text-muted fw-bold">@item.Quantidade</td>
+                                                    <td class="text-end text-muted">@item.PrecoUnitario.ToString("C")</td>
+                                                    <td class="text-end pe-4 fw-bold text-primary">
+                                                        @((item.PrecoUnitario * item.Quantidade).ToString("C"))
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="text-end mt-3">
+                                <button class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-question-circle"></i> Ajuda com este pedido
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<Encomenda>? encomendas;
+    private HashSet<int> idsExpandidos = new HashSet<int>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        encomendas = await Api.GetMinhasEncomendasAsync();
+    }
+
+    private void AlternarDetalhes(int id)
+    {
+        if (idsExpandidos.Contains(id))
+        {
+            idsExpandidos.Remove(id);
+        }
+        else
+        {
+            idsExpandidos.Add(id);
+        }
+    }
+
+    private string GetCorEstado(string estado)
+    {
+        return estado switch
+        {
+            "Pendente" => "warning",   // Amarelo
+            "Pago" => "info",       // Azul Claro
+            "Enviado" => "primary",    // Azul Forte
+            "Entregue" => "success",   // Verde
+            "Cancelado" => "danger",   // Vermelho
+            _ => "secondary"           // Cinza
+        };
+    }
+}

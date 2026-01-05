@@ -1,0 +1,308 @@
+﻿@page "/registar"
+@using MyMedia.Shared.DTOs
+@using MyMedia.Shared.Services
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+
+<style>
+    /* Fundo igual ao Login */
+    .register-container {
+        min-height: 90vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f8f9fa;
+        padding: 40px 0;
+    }
+
+    /* O Cartão */
+    .register-card {
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        overflow: hidden;
+        background: white;
+    }
+
+    /* Cabeçalho */
+    .register-header {
+        background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+        padding: 30px;
+        text-align: center;
+        color: white;
+    }
+
+    .register-icon {
+        font-size: 2.5rem;
+        color: #FFC800; /* Dourado */
+        margin-bottom: 5px;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+    }
+
+    /* Inputs e Ícones */
+    .form-control {
+        border-radius: 10px;
+        padding: 10px;
+        border: 1px solid #e0e0e0;
+        background-color: #fcfcfc;
+    }
+
+        .form-control:focus {
+            border-color: #26d0ce;
+            box-shadow: 0 0 0 4px rgba(38, 208, 206, 0.1);
+        }
+
+    .input-group-text {
+        border: none;
+        background: transparent;
+        color: #1a2980;
+    }
+
+    /* Botões de Seleção (Cliente vs Fornecedor) */
+    .role-btn {
+        border: 2px solid #e0e0e0;
+        background: white;
+        color: #555;
+        font-weight: 600;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        padding: 15px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+        .role-btn:hover {
+            border-color: #26d0ce;
+            color: #26d0ce;
+        }
+
+        /* Estilo quando selecionado */
+        .role-btn.active {
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 5px 15px rgba(26, 41, 128, 0.3);
+            transform: translateY(-2px);
+        }
+
+    /* Botão Registar */
+    .btn-register {
+        background: linear-gradient(to right, #1a2980, #26d0ce);
+        border: none;
+        border-radius: 50px;
+        padding: 12px;
+        font-weight: 700;
+        color: white;
+        transition: all 0.3s;
+    }
+
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(26, 41, 128, 0.4);
+            color: white;
+        }
+
+    /* Animação para campos extra */
+    .fade-in-section {
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="register-container">
+    <div class="col-md-8 col-lg-6">
+
+        <div class="card register-card animate__animated animate__fadeIn">
+
+            <div class="register-header">
+                <i class="bi bi-person-plus-fill register-icon"></i>
+                <h3 class="fw-bold mb-0">Criar Nova Conta</h3>
+                <small style="opacity: 0.9;">Junta-te à comunidade MyMedia</small>
+            </div>
+
+            <div class="card-body p-4 p-md-5">
+                <EditForm Model="@registoModel" OnValidSubmit="HandleRegisto">
+                    <DataAnnotationsValidator />
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-muted small">EU SOU:</label>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <button type="button" class="role-btn @(registoModel.TipoUtilizador == "Cliente" ? "active" : "")"
+                                        @onclick="@(() => MudarTipo("Cliente"))">
+                                    <i class="bi bi-person-heart fs-4"></i> Cliente
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button type="button" class="role-btn @(registoModel.TipoUtilizador == "Fornecedor" ? "active" : "")"
+                                        @onclick="@(() => MudarTipo("Fornecedor"))">
+                                    <i class="bi bi-shop fs-4"></i> Fornecedor
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="text-muted opacity-25 my-4">
+
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label text-muted fw-bold small">NOME COMPLETO</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                <InputText @bind-Value="registoModel.NomeCompleto" class="form-control" placeholder="O teu nome" />
+                            </div>
+                            <ValidationMessage For="@(() => registoModel.NomeCompleto)" class="text-danger small" />
+                        </div>
+
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label text-muted fw-bold small">EMAIL</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                <InputText @bind-Value="registoModel.Email" class="form-control" placeholder="exemplo@email.com" />
+                            </div>
+                            <ValidationMessage For="@(() => registoModel.Email)" class="text-danger small" />
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted fw-bold small">PASSWORD</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                <InputText @bind-Value="registoModel.Password" type="password" class="form-control" placeholder="******" />
+                            </div>
+                            <ValidationMessage For="@(() => registoModel.Password)" class="text-danger small" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted fw-bold small">CONFIRMAR</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-check-circle"></i></span>
+                                <InputText @bind-Value="registoModel.ConfirmarPassword" type="password" class="form-control" placeholder="******" />
+                            </div>
+                            <ValidationMessage For="@(() => registoModel.ConfirmarPassword)" class="text-danger small" />
+                        </div>
+                    </div>
+
+                    @if (registoModel.TipoUtilizador == "Cliente")
+                    {
+                        <div class="fade-in-section bg-light p-3 rounded border mt-3">
+                            <h6 class="text-primary fw-bold mb-3"><i class="bi bi-wallet2"></i> Dados de Faturação</h6>
+
+                            <div class="mb-3">
+                                <label class="small fw-bold text-muted">NIF PESSOAL</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-postcard"></i></span>
+                                    <InputText @bind-Value="registoModel.Nif" class="form-control" />
+                                </div>
+                            </div>
+                            <div class="mb-0">
+                                <label class="small fw-bold text-muted">MORADA DE ENTREGA</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                                    <InputTextArea @bind-Value="registoModel.Morada" class="form-control" rows="2" />
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    @if (registoModel.TipoUtilizador == "Fornecedor")
+                    {
+                        <div class="fade-in-section bg-light p-3 rounded border mt-3">
+                            <h6 class="text-success fw-bold mb-3"><i class="bi bi-building"></i> Dados da Empresa</h6>
+
+                            <div class="alert alert-warning small py-2 mb-3">
+                                <i class="bi bi-info-circle-fill"></i> A conta será validada manualmente antes de poderes vender.
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="small fw-bold text-muted">NOME EMPRESA</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-briefcase"></i></span>
+                                        <InputText @bind-Value="registoModel.NomeEmpresa" class="form-control" />
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="small fw-bold text-muted">NIF EMPRESA</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-hash"></i></span>
+                                        <InputText @bind-Value="registoModel.NifEmpresa" class="form-control" />
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <label class="small fw-bold text-muted">IBAN</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-credit-card"></i></span>
+                                        <InputText @bind-Value="registoModel.Iban" class="form-control" placeholder="PT50..." />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(mensagem))
+                    {
+                        <div class="alert alert-info mt-3 d-flex align-items-center">
+                            <i class="bi bi-info-circle-fill me-2 fs-5"></i> @mensagem
+                        </div>
+                    }
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-register btn-lg">
+                            CRIAR CONTA <i class="bi bi-arrow-right-circle ms-2"></i>
+                        </button>
+                    </div>
+
+                </EditForm>
+
+                <div class="text-center mt-4">
+                    <span class="text-muted">Já tens conta?</span>
+                    <a href="login" class="text-decoration-none fw-bold" style="color: #1a2980;">Entrar aqui</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private RegistoDTO registoModel = new RegistoDTO();
+    private string mensagem = "";
+
+    protected override void OnInitialized()
+    {
+        registoModel.TipoUtilizador = "Cliente";
+    }
+
+    private void MudarTipo(string tipo)
+    {
+        registoModel.TipoUtilizador = tipo;
+    }
+
+    private async Task HandleRegisto()
+    {
+        var resultado = await AuthService.Registar(registoModel);
+
+        if (resultado == "Sucesso")
+        {
+            mensagem = "Conta criada com sucesso! A redirecionar...";
+            await Task.Delay(2000);
+            Navigation.NavigateTo("/login");
+        }
+        else
+        {
+            mensagem = "Erro: " + resultado;
+        }
+    }
+}

@@ -1,0 +1,216 @@
+﻿@page "/carrinho/checkout"
+@using MyMedia.Shared.DTOs
+@using MyMedia.Shared.Interfaces
+@using MyMedia.Shared.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Linq
+@inject ICarrinhoService CarrinhoService
+@inject NavigationManager Nav
+@inject AuthenticationStateProvider AuthStateProvider
+@attribute [Authorize(Roles = "Cliente")]
+
+
+<ErrorBoundary>
+    <ChildContent>
+        <div class="checkout-container pt-4">
+            <div class="container">
+
+                <h2 class="section-title animate__animated animate__fadeInDown">
+                    <i class="bi bi-credit-card-2-front"></i> Finalizar Compra
+                </h2>
+
+                @if ((itens ?? Enumerable.Empty<ItemCarrinhoDto>()).Count() == 0)
+                {
+                    <div class="alert alert-warning shadow-sm rounded-4 p-4 text-center">
+                        <i class="bi bi-cart-x fs-1 d-block mb-3"></i>
+                        <h5>O teu carrinho está vazio.</h5>
+                        <a href="/" class="btn btn-primary mt-3">Voltar ao Catálogo</a>
+                    </div>
+                }
+                else
+                {
+                    <div class="row animate__animated animate__fadeInUp">
+                        <div class="col-lg-7">
+
+                            <div class="custom-card">
+                                <h5 class="fw-bold mb-4 text-secondary"><i class="bi bi-geo-alt-fill me-2"></i> Detalhes de Envio</h5>
+                                <div class="mb-2">
+                                    <label class="form-label fw-bold text-muted small">MORADA DE ENTREGA</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-house-door text-primary"></i></span>
+                                        <input @bind="encomenda.MoradaEntrega"
+                                               class="form-control form-control-lg border-start-0 ps-0"
+                                               placeholder="Ex: Rua das Flores, 123, 4º Esq..." />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="custom-card">
+                                <h5 class="fw-bold mb-4 text-secondary"><i class="bi bi-wallet2 me-2"></i> Método de Pagamento</h5>
+
+                                <div class="d-flex flex-column gap-3">
+                                    <div class="payment-option-card @(encomenda?.MetodoPagamento == "Cartao" ? "active" : "")"
+                                         @onclick="@(() => encomenda.MetodoPagamento = "Cartao")">
+
+                                        <i class="bi bi-credit-card-2-front-fill payment-icon text-primary"></i>
+                                        <div>
+                                            <div class="fw-bold">Cartão de Crédito / Débito</div>
+                                            <small class="text-muted">Visa, Mastercard, Maestro</small>
+                                        </div>
+                                        <div class="selection-indicator"></div>
+                                    </div>
+
+                                    <div class="payment-option-card @(encomenda?.MetodoPagamento == "MBWay" ? "active" : "")"
+                                         @onclick="@(() => encomenda.MetodoPagamento = "MBWay")">
+
+                                        <i class="bi bi-phone-fill payment-icon text-danger"></i>
+                                        <div>
+                                            <div class="fw-bold">MBWay</div>
+                                            <small class="text-muted">Pagamento instantâneo via telemóvel</small>
+                                        </div>
+                                        <div class="selection-indicator"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(mensagemErro))
+                            {
+                                <div class="alert alert-danger d-flex align-items-center mt-3 shadow-sm">
+                                    <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+                                    <div>@mensagemErro</div>
+                                </div>
+                            }
+
+                        </div>
+
+                        <div class="col-lg-5">
+                            <div class="summary-card text-white">
+                                <h4 class="mb-4 fw-bold"><i class="bi bi-bag me-2"></i> Resumo do Pedido</h4>
+
+                                <div class="mb-4" style="max-height: 300px; overflow-y: auto;">
+                                    @foreach (var item in itens ?? Enumerable.Empty<ItemCarrinhoDto>())
+                                    {
+                                        <div class="item-pill d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <div class="fw-bold">@item.Titulo</div>
+                                                <small style="opacity: 0.8">Qtd: @item.Quantidade</small>
+                                            </div>
+                                            <div class="fw-bold">
+                                                @((item.PrecoUnitario * item.Quantidade).ToString("C"))
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+
+                                <hr style="border-color: rgba(255,255,255,0.3);">
+
+                                <div class="summary-item">
+                                    <span>Subtotal</span>
+                                    <span>@Total.ToString("C")</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span>Envio</span>
+                                    <span class="badge bg-white text-primary">Grátis</span>
+                                </div>
+
+                                <div class="total-row">
+                                    <span class="fs-5">Total a Pagar</span>
+                                    <span class="fs-2 fw-bold">@Total.ToString("C")</span>
+                                </div>
+
+                                <button class="btn-pay" @onclick="Finalizar" disabled="@isProcessing">
+                                    @if (isProcessing)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2"></span>
+                                        <span>A Processar...</span>
+                                    }
+                                    else
+                                    {
+                                        <span>CONFIRMAR PAGAMENTO <i class="bi bi-check-circle-fill ms-2"></i></span>
+                                    }
+                                </button>
+
+                                <div class="text-center mt-3 small opacity-75">
+                                    <i class="bi bi-lock-fill"></i> Pagamento 100% Seguro
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </ChildContent>
+    <ErrorContent Context="ex">
+        <div class="container mt-5">
+            <div class="alert alert-danger shadow">
+                <h5><i class="bi bi-bug-fill"></i> Ocorreu um erro inesperado.</h5>
+                <pre class="small mt-2 bg-light p-2 rounded text-dark">@ex.Message</pre>
+            </div>
+        </div>
+    </ErrorContent>
+</ErrorBoundary>
+
+@code {
+    private List<ItemCarrinhoDto>? itens = new List<ItemCarrinhoDto>();
+    private EncomendaDto encomenda = new EncomendaDto();
+    private bool isProcessing = false;
+    private string mensagemErro = string.Empty;
+
+    private decimal Total => (itens ?? Enumerable.Empty<ItemCarrinhoDto>()).Sum(i => i.PrecoUnitario * i.Quantidade);
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            itens = await CarrinhoService.ObterItensDto();
+            // Define o padrão, mas não reinicia se o user voltar atrás (se mantivesses estado)
+            if (string.IsNullOrEmpty(encomenda.MetodoPagamento))
+            {
+                encomenda.MetodoPagamento = "MBWay";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro init checkout: {ex.Message}");
+        }
+    }
+
+    private async Task Finalizar()
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(encomenda.MoradaEntrega))
+            {
+                mensagemErro = "⚠️ Por favor, preenche a morada de entrega para continuarmos.";
+                return;
+            }
+
+            isProcessing = true;
+            mensagemErro = string.Empty;
+
+            encomenda.Itens = itens ?? new List<ItemCarrinhoDto>();
+            encomenda.ValorTotal = Total;
+
+            var sucesso = await CarrinhoService.FinalizarEncomenda(encomenda);
+
+            if (sucesso)
+            {
+                // Limpa o carrinho localmente se necessário, ou deixa a API tratar disso
+                Nav.NavigateTo("/encomendas/minhas");
+            }
+            else
+            {
+                mensagemErro = "❌ Ocorreu um erro ao processar o pagamento. Tenta novamente.";
+            }
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = "Erro inesperado: " + ex.Message;
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+}

@@ -1,0 +1,230 @@
+﻿@page "/"
+@page "/catalogo"
+@using MyMedia.Shared.Entities
+@using MyMedia.Shared.Services
+@using MyMedia.Shared.Components
+@using MyMedia.Shared.Interfaces
+
+@inject IProdutoService ProdService
+@inject ICategoriaService CatService
+
+<PageTitle>Catálogo | MyMedia</PageTitle>
+
+
+<div class="catalog-container pt-4">
+    <div class="container">
+
+        @* 1. FRISO DE NAVEGAÇÃO (BREADCRUMB) *@
+        <div class="mb-3 px-2">
+            <nav aria-label="breadcrumb">
+                <div class="breadcrumb-custom">
+                    <div class="breadcrumb-item-custom @(catAtualId == 0 ? "active" : "")"
+                         @onclick="() => NavegarPara(0)">
+                        <i class="bi bi-house-door-fill me-1"></i> Todas
+                    </div>
+
+                    @foreach (var cat in caminhoPao)
+                    {
+                        <i class="bi bi-chevron-right breadcrumb-separator"></i>
+                        <div class="breadcrumb-item-custom @(cat.Id == catAtualId ? "active" : "")"
+                             @onclick="() => NavegarPara(cat.Id)">
+                            @cat.Nome
+                        </div>
+                    }
+                </div>
+            </nav>
+        </div>
+
+        @* 2. SLIDER DE SUBCATEGORIAS (Só aparece se houver) *@
+        @if (categoriasNoSlider.Any())
+        {
+            <div class="mb-4">
+                <h5 class="section-title px-2 small text-uppercase text-muted">
+                    @(catAtualId == 0 ? "Explorar Categorias" : "Subcategorias")
+                </h5>
+
+                <div class="category-slider animate__animated animate__fadeIn">
+                    @foreach (var cat in categoriasNoSlider)
+                    {
+                        <div class="cat-card" @onclick="() => NavegarPara(cat.Id)">
+                            <span class="fw-bold text-truncate w-100">@cat.Nome</span>
+                            <small class="text-muted" style="font-size: 0.7rem;">Ver produtos</small>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        @* 3. TÍTULO DOS PRODUTOS *@
+        <div class="d-flex justify-content-between align-items-center mb-2 px-2 mt-4">
+            <h4 class="section-title mb-0">
+                @if (catAtualId == 0)
+                {
+                    <span><i class="bi bi-fire me-2 text-danger"></i>Destaques & Recentes</span>
+                }
+                else
+                {
+                    <span>
+                        <i class="bi bi-folder2-open me-2 text-primary"></i>
+                        @(caminhoPao.LastOrDefault()?.Nome ?? "Produtos")
+                    </span>
+                }
+            </h4>
+            <span class="badge bg-light text-dark border">
+                @produtosVisiveis.Count items
+            </span>
+        </div>
+
+        @* 4. SLIDER DE PRODUTOS (Horizontal) *@
+        @if (isLoading)
+        {
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
+            </div>
+        }
+        else if (!produtosVisiveis.Any())
+        {
+            <div class="alert alert-warning text-center p-5 shadow-sm rounded-4 mt-3">
+                <h4 class="fw-bold">Nenhum produto aqui.</h4>
+                <p class="text-muted">Esta categoria ainda não tem produtos diretos.</p>
+                <button class="btn btn-outline-dark mt-2" @onclick="() => NavegarPara(0)">Voltar ao Início</button>
+            </div>
+        }
+        else
+        {
+            /* 👇 AQUI ESTÁ A MUDANÇA: DIV COM CLASSE product-slider EM VEZ DE ROW */
+            <div class="product-slider animate__animated animate__fadeInRight">
+                @foreach (var p in produtosVisiveis)
+                {
+                    <div class="product-slide-item">
+                        <ProductCard Produto="p" />
+                    </div>
+                }
+            </div>
+
+            /* Dica visual para scroll horizontal */
+            <div class="d-flex justify-content-end text-muted small pe-3 d-md-none">
+                <i class="bi bi-arrow-right me-1"></i> Desliza para ver mais
+            </div>
+        }
+
+        @* 5. DESTAQUE DO DIA (NO FUNDO) *@
+        @if (produtoDestaque != null && catAtualId == 0)
+        {
+            <div class="mt-5 pt-4 border-top animate__animated animate__fadeInUp">
+                <h4 class="section-title mb-3 text-center">Não percas esta oportunidade!</h4>
+                <ProdutoDestaque Produto="produtoDestaque" />
+            </div>
+        }
+
+    </div>
+</div>
+
+@code {
+    // Dados globais
+    private List<Produto> todosProdutos = new();
+    private List<Categoria> todasCategorias = new();
+
+    // Estado da Visualização
+    private List<Produto> produtosVisiveis = new();
+    private List<Categoria> categoriasNoSlider = new();
+    private List<Categoria> caminhoPao = new();
+
+    private int catAtualId = 0;
+    private Produto? produtoDestaque;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        try
+        {
+            var taskCats = CatService.GetCategoriasAsync();
+            var taskProds = ProdService.GetProdutosAsync();
+
+            await Task.WhenAll(taskCats, taskProds);
+
+            todasCategorias = await taskCats;
+            var rawProdutos = await taskProds;
+
+            todosProdutos = rawProdutos.Where(p => p.Ativo).ToList();
+
+            if (todosProdutos.Count > 0)
+            {
+                var rnd = new Random();
+                produtoDestaque = todosProdutos[rnd.Next(todosProdutos.Count)];
+            }
+
+            NavegarPara(0);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void NavegarPara(int idCategoria)
+    {
+        catAtualId = idCategoria;
+        ConstruirCaminhoPao(idCategoria);
+
+        if (idCategoria == 0)
+        {
+            // Na raiz, mostra categorias Pai
+            categoriasNoSlider = todasCategorias
+                .Where(c => c.CategoriaPaiId == null || c.CategoriaPaiId == 0)
+                .ToList();
+        }
+        else
+        {
+            // Nas internas, mostra subcategorias
+            categoriasNoSlider = todasCategorias
+                .Where(c => c.CategoriaPaiId == idCategoria)
+                .ToList();
+        }
+
+        FiltrarProdutos(idCategoria);
+    }
+
+    private void ConstruirCaminhoPao(int id)
+    {
+        caminhoPao.Clear();
+        if (id == 0) return;
+
+        var cat = todasCategorias.FirstOrDefault(c => c.Id == id);
+        while (cat != null)
+        {
+            caminhoPao.Insert(0, cat);
+
+            if (cat.CategoriaPaiId != null && cat.CategoriaPaiId != 0)
+                cat = todasCategorias.FirstOrDefault(c => c.Id == cat.CategoriaPaiId);
+            else
+                cat = null;
+        }
+    }
+
+    private void FiltrarProdutos(int id)
+    {
+        if (id == 0)
+        {
+            produtosVisiveis = todosProdutos;
+        }
+        else
+        {
+            // Encontra produtos desta categoria ou das suas filhas diretas
+            var idsFilhos = todasCategorias
+                .Where(c => c.CategoriaPaiId == id)
+                .Select(c => c.Id)
+                .ToList();
+
+            produtosVisiveis = todosProdutos.Where(p =>
+                p.CategoriaId == id ||
+                idsFilhos.Contains(p.CategoriaId)
+            ).ToList();
+        }
+    }
+}

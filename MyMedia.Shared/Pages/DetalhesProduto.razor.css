@@ -1,0 +1,138 @@
+﻿.details-container {
+    min-height: 85vh;
+    background-color: #f8f9fa;
+    padding-bottom: 50px;
+}
+
+/* Botão de Voltar */
+.back-link {
+    color: #6c757d;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+    .back-link:hover {
+        color: #1a2980;
+    }
+
+/* Cartão Principal */
+.product-details-card {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+    overflow: hidden;
+    background: white;
+}
+
+/* Área da Imagem */
+.image-section {
+    background-color: white;
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    position: relative;
+}
+
+.product-image {
+    max-height: 500px;
+    max-width: 100%;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+    .product-image:hover {
+        transform: scale(1.05);
+    }
+
+/* Área de Informação */
+.info-section {
+    padding: 40px;
+}
+
+.category-badge {
+    background-color: #eef2ff;
+    color: #1a2980;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.product-title {
+    color: #1a2980;
+    font-weight: 800;
+    font-size: 2rem;
+    line-height: 1.2;
+}
+
+.product-price {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1rem;
+}
+
+.description-text {
+    color: #555;
+    line-height: 1.6;
+    font-size: 1rem;
+}
+
+/* Caixa de Meta-Dados */
+.meta-box {
+    background-color: #f8f9fa;
+    border-radius: 15px;
+    padding: 20px;
+    border: 1px solid #f0f0f0;
+}
+
+.meta-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #888;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.meta-value {
+    font-weight: 600;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Botão Adicionar */
+.btn-add-cart {
+    background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 15px 30px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    width: 100%;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+    .btn-add-cart:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(26, 41, 128, 0.3);
+        color: white;
+    }
+
+    .btn-add-cart:disabled {
+        background: #e0e0e0;
+        color: #999;
+        cursor: not-allowed;
+    }

@@ -1,0 +1,152 @@
+﻿/* Contentor Principal */
+.catalog-container {
+    min-height: 90vh;
+    background-color: #f8f9fa;
+    padding-bottom: 60px;
+    overflow-x: hidden; /* Evita scroll horizontal na página inteira */
+}
+
+/* --- ESTILO DO FRISO (BREADCRUMB) --- */
+.breadcrumb-custom {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+    color: #6c757d;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.breadcrumb-item-custom {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: color 0.2s;
+    font-weight: 600;
+}
+
+    .breadcrumb-item-custom:hover {
+        color: #1a2980;
+        text-decoration: underline;
+    }
+
+    .breadcrumb-item-custom.active {
+        color: #1a2980;
+        cursor: default;
+        text-decoration: none;
+    }
+
+.breadcrumb-separator {
+    color: #ccc;
+    font-size: 0.8rem;
+}
+
+/* --- SLIDER DE CATEGORIAS (IGUAL AO ANTERIOR) --- */
+.category-slider {
+    display: flex;
+    overflow-x: auto;
+    gap: 15px;
+    padding: 10px 5px 20px 5px;
+    scrollbar-width: none;
+}
+
+    .category-slider::-webkit-scrollbar {
+        display: none;
+    }
+
+.cat-card {
+    min-width: 140px;
+    background: white;
+    border-radius: 15px;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid #eee;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+    .cat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+
+    .cat-card.active {
+        background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+        border-color: transparent;
+        color: white;
+        box-shadow: 0 5px 15px rgba(26, 41, 128, 0.3);
+    }
+
+        .cat-card.active .cat-icon {
+            background-color: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .cat-card.active small {
+            color: rgba(255,255,255,0.8) !important;
+        }
+
+.cat-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background-color: #f0f2f5;
+    color: #1a2980;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+}
+
+/* --- NOVO: SLIDER DE PRODUTOS --- */
+.product-slider {
+    display: flex;
+    overflow-x: auto;
+    gap: 20px;
+    padding: 10px 5px 30px 5px; /* Espaço em baixo para a sombra e hover */
+    /* Comportamento de Scroll Suave */
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    /* Snap (Opcional: faz parar certinho no cartão) */
+    scroll-snap-type: x mandatory;
+}
+
+    /* Scrollbar personalizada fina para o slider de produtos */
+    .product-slider::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .product-slider::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    .product-slider::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 10px;
+    }
+
+        .product-slider::-webkit-scrollbar-thumb:hover {
+            background: #1a2980;
+        }
+
+/* Wrapper do Produto dentro do Slider */
+.product-slide-item {
+    min-width: 280px; /* Largura Fixa do Cartão */
+    max-width: 280px;
+    scroll-snap-align: start;
+    flex: 0 0 auto; /* Impede que encolha */
+}
+
+/* Títulos */
+.section-title {
+    font-weight: 800;
+    color: #1a2980;
+    margin-bottom: 0.5rem;
+}

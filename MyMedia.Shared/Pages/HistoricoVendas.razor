@@ -1,0 +1,134 @@
+﻿@page "/meus-produtos/vendas"
+@using MyMedia.Shared.DTOs
+@using MyMedia.Shared.Services
+@using Microsoft.AspNetCore.Authorization
+@inject ApiClient Api
+@attribute [Authorize(Roles = "Fornecedor")]
+
+
+<div class="sales-container pt-4">
+    <div class="container">
+        
+        <div class="row align-items-center mb-4">
+            <div class="col-md-6 mb-3 mb-md-0">
+                <h2 class="page-title animate__animated animate__fadeInDown">
+                    <i class="bi bi-graph-up-arrow text-primary me-2"></i> Histórico de Vendas
+                </h2>
+                <p class="text-muted mb-0">Consulta as tuas vendas e ganhos totais.</p>
+            </div>
+            <div class="col-md-6 d-flex justify-content-md-end animate__animated animate__fadeInRight">
+                <div class="kpi-card">
+                    <div>
+                        <div class="small opacity-75 fw-bold text-uppercase">Total Faturado</div>
+                        <div class="fs-2 fw-bold">@TotalFaturado.ToString("C")</div>
+                    </div>
+                    <div class="kpi-icon">
+                        <i class="bi bi-wallet2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (vendas == null)
+        {
+            <div class="d-flex justify-content-center p-5">
+                <div class="spinner-border text-primary" role="status"></div>
+            </div>
+        }
+        else if (!vendas.Any())
+        {
+            <div class="empty-state animate__animated animate__fadeInUp">
+                <div class="mb-4">
+                    <i class="bi bi-piggy-bank display-1 text-muted opacity-50"></i>
+                </div>
+                <h4 class="fw-bold text-dark">Sem vendas registadas</h4>
+                <p class="text-muted">Assim que os clientes comprarem os teus produtos, eles aparecerão aqui.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-card animate__animated animate__fadeInUp">
+                <div class="table-responsive">
+                    <table class="table custom-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Data / ID</th>
+                                <th>Produto</th>
+                                <th>Cliente</th>
+                                <th class="text-center">Qtd</th>
+                                <th class="text-end">Valor Total</th>
+                                <th class="text-center">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var v in vendas)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold text-dark">@v.Data.ToShortDateString()</div>
+                                        <small class="text-muted font-monospace">#@v.EncomendaId</small>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="product-icon">
+                                                <i class="bi bi-box-seam"></i>
+                                            </div>
+                                            <span class="fw-bold">@v.Produto</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="bi bi-person-circle text-muted"></i>
+                                            <span>@v.NomeCliente</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-light text-dark border">@v.Quantidade</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="fw-bold text-success">@v.Total.ToString("C")</span>
+                                    </td>
+                                    <td class="text-center">
+                                        @{ string cor = GetCorEstado(v.EstadoEntrega); }
+                                        <span class="status-badge bg-@cor bg-opacity-10 text-@cor border border-@cor">
+                                            @v.EstadoEntrega
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="text-center mt-3 text-muted small">
+                <i class="bi bi-info-circle me-1"></i> A mostrar @vendas.Count registos
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<VendaDto>? vendas;
+
+    private decimal TotalFaturado => vendas?.Sum(v => v.Total) ?? 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        vendas = await Api.GetVendasFornecedorAsync();
+    }
+
+    private string GetCorEstado(string estado)
+    {
+        return estado switch
+        {
+            "Pendente" => "warning",
+            "Pago" => "info",
+            "Enviado" => "primary",
+            "Entregue" => "success",
+            "Cancelado" => "danger",
+            _ => "secondary"
+        };
+    }
+}
+}

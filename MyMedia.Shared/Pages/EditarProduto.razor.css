@@ -1,0 +1,128 @@
+﻿.edit-container {
+    min-height: 85vh;
+    padding-bottom: 50px;
+    background-color: #f8f9fa;
+}
+
+/* Cabeçalho */
+.page-title {
+    color: #1a2980;
+    font-weight: 800;
+}
+
+/* Cartão Principal */
+.custom-card {
+    border: none;
+    border-radius: 20px;
+    background: white;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+    padding: 30px;
+}
+
+/* Labels */
+.form-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+    color: #6c757d;
+    margin-bottom: 5px;
+}
+
+/* Inputs */
+.form-control, .form-select {
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+    padding: 12px;
+    font-size: 0.95rem;
+    background-color: #fcfcfc;
+    transition: all 0.2s;
+}
+
+    .form-control:focus, .form-select:focus {
+        border-color: #26d0ce;
+        box-shadow: 0 0 0 4px rgba(38, 208, 206, 0.1);
+        background-color: white;
+    }
+
+/* Input Group Icons */
+.input-group-text {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-right: none;
+    color: #1a2980;
+    border-radius: 10px 0 0 10px;
+}
+
+.input-group .form-control {
+    border-left: none;
+    border-radius: 0 10px 10px 0;
+}
+
+/* Botão de Submeter */
+.btn-submit {
+    background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+    border: none;
+    border-radius: 50px;
+    padding: 12px 30px;
+    color: white;
+    font-weight: 700;
+    width: 100%;
+    transition: transform 0.2s;
+}
+
+    .btn-submit:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(26, 41, 128, 0.3);
+        color: white;
+    }
+
+/* Preview Box */
+.preview-card {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+    border: 1px solid #f0f0f0;
+}
+
+.img-preview-box {
+    width: 100%;
+    aspect-ratio: 1/1;
+    background-color: #f8f9fa;
+    border-radius: 12px;
+    border: 2px dashed #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.img-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 10px;
+}
+
+/* Toggle Panels */
+.settings-panel {
+    background-color: #fcfcfc;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.2s;
+}
+
+    .settings-panel:hover {
+        border-color: #26d0ce;
+        background-color: #fdfdfd;
+    }
+
+.form-check-input:checked {
+    background-color: #1a2980;
+    border-color: #1a2980;
+}
