@@ -42,7 +42,3 @@ Para testar o ecossistema completo no Visual Studio 2022:
 **Estado Pendente**: Novos produtos inseridos por fornecedores requerem aprovação administrativa para ficarem ativos.
 **Checkout**: A navegação é anónima, mas a finalização da compra exige autenticação de Cliente.
 
----
-**Autores:** Daniel Silva e Guilherme Martins
-**Instituição:** Instituto Superior de Engenharia de Coimbra (ISEC)
-**Ano Letivo:** 2025/2026 
