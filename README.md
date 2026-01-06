@@ -4,17 +4,17 @@
 ![Blazor](https://img.shields.io/badge/Blazor-Hybrid-512BD4?logo=blazor)
 ![SQL Server](https://img.shields.io/badge/SQL_Server-2022-CC2927?logo=microsoft-sql-server)
 
-O **MyMEDIA** é um ecossistema distribuído concebido para a gestão e comercialização de suportes multimédia (CDs, Vinis, Blu-Rays) e acessórios. [cite_start]Este projeto atua como um *marketplace* onde a empresa proprietária funciona como intermediária entre fornecedores e clientes finais[cite: 16].
+O **MyMEDIA** é um ecossistema distribuído concebido para a gestão e comercialização de suportes multimédia (CDs, Vinis, Blu-Rays) e acessórios. [cite_start]Este projeto atua como um *marketplace* onde a empresa proprietária funciona como intermediária entre fornecedores e clientes finais.
 
 ## 🏗️ Arquitetura do Sistema
 
-A solução segue uma arquitetura moderna e escalável, cumprindo o requisito de **código único** para múltiplas plataformas[cite: 129]:
+A solução segue uma arquitetura moderna e escalável, cumprindo o requisito de **código único** para múltiplas plataformas:
 
-**`MyMedia.Shared (RCL)`**: Biblioteca de classes Razor que centraliza páginas, componentes e lógica de negócio, partilhada entre Web e Mobile[cite: 97].
-**`MyMedia.API`**: Backend RESTful que gere a persistência de dados e segurança via **JWT**[cite: 19, 48].
-**`MyMedia.StoreManager`**: Aplicação de Backoffice com acesso direto à base de dados para gestão administrativa e validação de produtos[cite: 73, 140].
-**`MyMedia.Web`**: Interface pública para navegadores desenvolvida em Blazor WASM[cite: 55].
-**`MyMedia.Mobile`**: Aplicação nativa para Android e Windows utilizando **.NET MAUI / Blazor Hybrid**[cite: 55].
+**`MyMedia.Shared (RCL)`**: Biblioteca de classes Razor que centraliza páginas, componentes e lógica de negócio, partilhada entre Web e Mobile.
+**`MyMedia.API`**: Backend RESTful que gere a persistência de dados e segurança via **JWT**.
+**`MyMedia.StoreManager`**: Aplicação de Backoffice com acesso direto à base de dados para gestão administrativa e validação de produtos.
+**`MyMedia.Web`**: Interface pública para navegadores desenvolvida em Blazor WASM.
+**`MyMedia.Mobile`**: Aplicação nativa para Android e Windows utilizando **.NET MAUI / Blazor Hybrid**.
 
 ## 🚀 Como Executar
 
@@ -38,9 +38,9 @@ Para testar o ecossistema completo no Visual Studio 2022:
 
 ## 🛠️ Principais Regras de Negócio
 
-**Formação de Preço**: O preço final é a soma do preço base (fornecedor) com a margem definida pelo administrador[cite: 35, 135].
-**Estado Pendente**: Novos produtos inseridos por fornecedores requerem aprovação administrativa para ficarem ativos[cite: 33, 260].
-**Checkout**: A navegação é anónima, mas a finalização da compra exige autenticação de Cliente[cite: 43, 145].
+**Formação de Preço**: O preço final é a soma do preço base (fornecedor) com a margem definida pelo administrador.
+**Estado Pendente**: Novos produtos inseridos por fornecedores requerem aprovação administrativa para ficarem ativos.
+**Checkout**: A navegação é anónima, mas a finalização da compra exige autenticação de Cliente.
 
 ---
 **Autores:** Daniel Silva e Guilherme Martins
